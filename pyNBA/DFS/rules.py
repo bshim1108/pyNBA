@@ -1,9 +1,10 @@
 from pyNBA.DFS.constants import Site
 
+
 class FPCalculator(object):
     def __init__(self, site):
         self.site = site
-    
+
     def calculate_fantasy_points(self, season, pts, reb, ast, tov, blk, stl, tpm=None):
         if self.site == Site.FANDUEL:
             if int(season.split('-')[0]) < 2017:

@@ -1,15 +1,17 @@
 SEASONS = ['2014-15', '2015-16', '2016-17', '2017-18', '2018-19', '2019-20']
 
 TRADITIONAL_BOXSCORE_COLUMNS = ['GAME_ID', 'PLAYER_ID', 'TEAM_ABBREVIATION', 'START_POSITION', 'MIN',
-                                    'PTS', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB',
-                                    'AST', 'STL', 'BLK', 'TO', 'PF', 'PLUS_MINUS', 'COMMENT']
+                                'PTS', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB',
+                                'AST', 'STL', 'BLK', 'TO', 'PF', 'PLUS_MINUS', 'COMMENT']
 ADVANCED_BOXSCORE_COLUMNS = ['GAME_ID', 'PLAYER_ID', 'OREB_PCT', 'DREB_PCT', 'AST_PCT', 'AST_RATIO',
-                                'USG_PCT', 'PACE']
-MISC_BOXSCORE_COLUMNS = ['GAME_ID', 'PLAYER_ID', 'PTS_OFF_TOV', 'PTS_2ND_CHANCE', 'PTS_FB', 'PTS_PAINT']
-SCORING_BOXSCORE_COLUMNS = ['GAME_ID', 'PLAYER_ID', 'PCT_AST_2PM', 'PCT_AST_3PM']
+                             'USG_PCT', 'PACE']
+MISC_BOXSCORE_COLUMNS = ['GAME_ID', 'PLAYER_ID', 'PTS_OFF_TOV',
+                         'PTS_2ND_CHANCE', 'PTS_FB', 'PTS_PAINT']
+SCORING_BOXSCORE_COLUMNS = ['GAME_ID', 'PLAYER_ID', 'PCT_AST_2PM',
+                            'PCT_AST_3PM']
 
 TEAM_NAME_TO_ABBREVIATION = {
-    'Atlanta' : 'ATL',
+    'Atlanta': 'ATL',
     'Boston': 'BOS',
     'Brooklyn': 'BKN',
     'Charlotte': 'CHA',

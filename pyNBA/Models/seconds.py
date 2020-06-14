@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 from pyNBA.Models.features import FeatureCreation
 from pyNBA.Models.base import CatBoostRegressionModel
 
 from pyNBA.Models.constants import SECONDS_MODEL_PARAMS
+
 
 class SecondsModel(object):
     def __init__(self, train_data, test_data):
@@ -26,32 +26,54 @@ class SecondsModel(object):
         train_index = self.train_data.set_index(['GAMEID', 'PLAYERID']).index
         test_index = self.test_data.set_index(['GAMEID', 'PLAYERID']).index
 
-        quarterly_boxscore_data = quarterly_boxscore_data.pivot_table('SECONDSPLAYED', ['GAMEID', 'PLAYERID'], 'QUARTER')
-        quarterly_boxscore_data.columns =['SP(Q{})'.format(str(col)) for col in quarterly_boxscore_data.columns]
+        quarterly_boxscore_data = quarterly_boxscore_data.pivot_table(
+            'SECONDSPLAYED', ['GAMEID', 'PLAYERID'], 'QUARTER'
+            )
+        quarterly_boxscore_data.columns = ['SP(Q{})'.format(str(col)) for col in quarterly_boxscore_data.columns]
         data = data.merge(quarterly_boxscore_data, on=['GAMEID', 'PLAYERID'], how='left')
         data[quarterly_boxscore_data.columns] = data[quarterly_boxscore_data.columns].fillna(0)
         data['SP(Q1-Q3)'] = data['SP(Q1)'] + data['SP(Q2)'] + data['SP(Q3)']
         data['SP(REG)'] = data['SP(Q1-Q3)'] + data['SP(Q4)']
 
         # season averages
-        data = self.feature_creation.expanding_mean(df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SECONDSPLAYED', new_col_name='AVG_Y')
-        data = self.feature_creation.expanding_mean(df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(REG)', new_col_name='AVG_SP(REG)')
-        data = self.feature_creation.expanding_mean(df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(Q1-Q3)', new_col_name='AVG_SP(Q1-Q3)')
-        data = self.feature_creation.expanding_mean(df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(Q4)', new_col_name='AVG_SP(Q4)')
+        data = self.feature_creation.expanding_mean(
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SECONDSPLAYED', new_col_name='AVG_Y'
+            )
+        data = self.feature_creation.expanding_mean(
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(REG)', new_col_name='AVG_SP(REG)'
+            )
+        data = self.feature_creation.expanding_mean(
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(Q1-Q3)', new_col_name='AVG_SP(Q1-Q3)'
+            )
+        data = self.feature_creation.expanding_mean(
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(Q4)', new_col_name='AVG_SP(Q4)'
+            )
         self.regressors.append('AVG_Y')
         self.regressors.append('AVG_SP(REG)')
         self.regressors.append('AVG_SP(Q1-Q3)')
         self.regressors.append('AVG_SP(Q4)')
 
         # 1 game lags
-        data = self.feature_creation.lag(df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(REG)', new_col_name='L1_SP(REG)', n_shift=1)
-        data = self.feature_creation.lag(df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(Q1-Q3)', new_col_name='L1_SP(Q1-Q3)', n_shift=1)
+        data = self.feature_creation.lag(
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(REG)', new_col_name='L1_SP(REG)',
+            n_shift=1)
+
+        data = self.feature_creation.lag(
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(Q1-Q3)', new_col_name='L1_SP(Q1-Q3)',
+            n_shift=1
+            )
         self.regressors.append('L1_SP(REG)')
         self.regressors.append('L1_SP(Q1-Q3)')
 
         # exponentially weighted means
-        data = self.feature_creation.expanding_ewm(df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(REG)', new_col_name='EWM_SP(REG)', alpha=0.90)
-        data = self.feature_creation.expanding_ewm(df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(Q1-Q3)', new_col_name='EWM_SP(Q1-Q3)', alpha=0.90)
+        data = self.feature_creation.expanding_ewm(
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(REG)', new_col_name='EWM_SP(REG)',
+            alpha=0.90
+            )
+        data = self.feature_creation.expanding_ewm(
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SP(Q1-Q3)', new_col_name='EWM_SP(Q1-Q3)',
+            alpha=0.90
+            )
         self.regressors.append('EWM_SP(REG)')
         self.regressors.append('EWM_SP(Q1-Q3)')
 
@@ -79,7 +101,10 @@ class SecondsModel(object):
         # start
         self.regressors.append('START')
 
-        data = self.feature_creation.expanding_mean(df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID', 'START'], col_name='SP(REG)', new_col_name='AVG_SP(REG)_R')
+        data = self.feature_creation.expanding_mean(
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID', 'START'], col_name='SP(REG)',
+            new_col_name='AVG_SP(REG)_R'
+            )
         self.regressors.append('AVG_SP(REG)_R')
 
         # depth
@@ -103,10 +128,12 @@ class SecondsModel(object):
         self.regressors.append('SUM_AVG_SP(REG)')
 
         data = self.feature_creation.expanding_mean(
-            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SUM_AVG_SP(REG)', new_col_name='AVG_SUM_AVG_SP(REG)'
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SUM_AVG_SP(REG)',
+            new_col_name='AVG_SUM_AVG_SP(REG)'
         )
         data = self.feature_creation.expanding_mean(
-            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID', 'START'], col_name='SUM_AVG_SP(REG)', new_col_name='AVG_SUM_AVG_SP(REG)_R'
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID', 'START'], col_name='SUM_AVG_SP(REG)',
+            new_col_name='AVG_SUM_AVG_SP(REG)_R'
         )
         self.regressors.append('AVG_SUM_AVG_SP(REG)')
         self.regressors.append('AVG_SUM_AVG_SP(REG)_R')
@@ -122,7 +149,8 @@ class SecondsModel(object):
         self.regressors.append('SUM_AVG_SP(REG)_P')
 
         data = self.feature_creation.expanding_mean(
-            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SUM_AVG_SP(REG)_P', new_col_name='AVG_SUM_AVG_SP(REG)_P'
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='SUM_AVG_SP(REG)_P',
+            new_col_name='AVG_SUM_AVG_SP(REG)_P'
         )
         self.regressors.append('AVG_SUM_AVG_SP(REG)_P')
 
@@ -135,7 +163,7 @@ class SecondsModel(object):
             start_lineup.sort()
             start_lineup = '_'.join(start_lineup)
             data.loc[(game_id, team), 'START_LINEUP'] = start_lineup
-            
+
             stars = list(temp.loc[temp['AVG_SP(REG)'] > 2040, 'PLAYERID'].values)
             stars.sort()
             stars = '_'.join(stars)
@@ -143,10 +171,12 @@ class SecondsModel(object):
         data = data.reset_index()
 
         data = self.feature_creation.expanding_mean(
-            df=data, group_col_names=['SEASON', 'START_LINEUP', 'PLAYERID'], col_name='AVG_SP(REG)', new_col_name='AVG_SP(REG)_STARTERS'
+            df=data, group_col_names=['SEASON', 'START_LINEUP', 'PLAYERID'], col_name='AVG_SP(REG)',
+            new_col_name='AVG_SP(REG)_STARTERS'
         )
         data = self.feature_creation.expanding_mean(
-            df=data, group_col_names=['SEASON', 'STARS', 'PLAYERID'], col_name='AVG_SP(REG)', new_col_name='AVG_SP(REG)_STARS'
+            df=data, group_col_names=['SEASON', 'STARS', 'PLAYERID'], col_name='AVG_SP(REG)',
+            new_col_name='AVG_SP(REG)_STARS'
         )
         self.regressors.append('AVG_SP(REG)_STARTERS')
         self.regressors.append('AVG_SP(REG)_STARS')
@@ -174,12 +204,17 @@ class SecondsModel(object):
         data = data.merge(temp, left_on=['GAMEID', 'TEAM'], right_on=['GAMEID', 'OPP_TEAM'], how='left')
 
         data['ABS_DIFF_PTS'] = (data['TEAM_PTS'] - data['OPP_TEAM_PTS']).abs()
-        data = self.feature_creation.expanding_mean(df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='ABS_DIFF_PTS', new_col_name='AVG_ABS_DIFF_PTS')
+        data = self.feature_creation.expanding_mean(
+            df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='ABS_DIFF_PTS',
+            new_col_name='AVG_ABS_DIFF_PTS'
+            )
         self.regressors.append('AVG_ABS_DIFF_PTS')
 
         # misc
         data['GP'] = 1
-        data = self.feature_creation.expanding_sum(df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='GP', new_col_name='COUNT_GP')
+        data = self.feature_creation.expanding_sum(
+            df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='GP', new_col_name='COUNT_GP'
+            )
         self.regressors.append('COUNT_GP')
 
         data = self.preprocess(data)

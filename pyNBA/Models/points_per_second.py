@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 from pyNBA.Models.features import FeatureCreation
-from pyNBA.Models.base import CatBoostRegressionModel
+from pyNBA.Models.base import CatBoostRegressionModel, WeightFunctions
 
 from pyNBA.Models.constants import PPS_MODEL_PARAMS
+
 
 class PPSModel(object):
     def __init__(self, train_data, test_data):
@@ -36,20 +36,21 @@ class PPSModel(object):
 
         # season averages
         data = self.feature_creation.expanding_weighted_mean(
-            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name=self.regressand, weight_col_name='SECONDSPLAYED',
-            new_col_name='AVG_Y'
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name=self.regressand,
+            weight_col_name='SECONDSPLAYED', new_col_name='AVG_Y'
         )
         self.regressors.append('AVG_Y')
 
         data = self.feature_creation.expanding_weighted_mean(
-            df=data, group_col_names=['SEASON', 'TEAM', 'OPP_TEAM', 'PLAYERID'], col_name=self.regressand, weight_col_name='SECONDSPLAYED',
-            new_col_name='AVG_Y_OPP_TEAM'
+            df=data, group_col_names=['SEASON', 'TEAM', 'OPP_TEAM', 'PLAYERID'], col_name=self.regressand,
+            weight_col_name='SECONDSPLAYED', new_col_name='AVG_Y_OPP_TEAM'
         )
         self.regressors.append('AVG_Y_OPP_TEAM')
 
         # exponentially weighted mean
         data = self.feature_creation.expanding_ewm(
-            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name=self.regressand, new_col_name='EWM_Y', alpha=0.90
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name=self.regressand, new_col_name='EWM_Y',
+            alpha=0.90
         )
         self.regressors.append('EWM_Y')
 
@@ -67,8 +68,8 @@ class PPSModel(object):
 
         # start
         data = self.feature_creation.expanding_weighted_mean(
-            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID', 'START'], col_name=self.regressand, weight_col_name='SECONDSPLAYED',
-            new_col_name='AVG_Y_R'
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID', 'START'], col_name=self.regressand,
+            weight_col_name='SECONDSPLAYED', new_col_name='AVG_Y_R'
         )
         self.regressors.append('AVG_Y_R')
 
@@ -76,7 +77,8 @@ class PPSModel(object):
         data['PP'] = 3*data['FG3A'] + 2*(data['FGA']-data['FG3A']) + 1*data['FTA']
         data['PPPS'] = data['PP']/data['SECONDSPLAYED']
         data = self.feature_creation.expanding_weighted_mean(
-            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='PPPS', new_col_name='AVG_PPPS', weight_col_name='SECONDSPLAYED'
+            df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='PPPS', new_col_name='AVG_PPPS',
+            weight_col_name='SECONDSPLAYED'
         )
         data = self.feature_creation.rolling_weighted_mean(
             df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='PPPS', new_col_name='MA3_PPPS',
@@ -113,10 +115,11 @@ class PPSModel(object):
                 'TEAM_Y_AVG': x['AVG_PTS'].sum()/x['AVG_SP'].sum()
             })
         ).reset_index()
-        grouped_defensive_boxscores['TEAM_Y_DIFF_ALLOWED'] = grouped_defensive_boxscores['TEAM_Y_ALLOWED'] - grouped_defensive_boxscores['TEAM_Y_AVG']
+        grouped_defensive_boxscores['TEAM_Y_DIFF_ALLOWED'] = grouped_defensive_boxscores['TEAM_Y_ALLOWED'] - \
+            grouped_defensive_boxscores['TEAM_Y_AVG']
         grouped_defensive_boxscores = self.feature_creation.expanding_mean(
-            df=grouped_defensive_boxscores, group_col_names=['SEASON', 'OPP_TEAM'], col_name='TEAM_Y_DIFF_ALLOWED', new_col_name='AVG_TEAM_Y_DIFF_ALLOWED',
-            order_idx_name='DATE', min_periods=5
+            df=grouped_defensive_boxscores, group_col_names=['SEASON', 'OPP_TEAM'], col_name='TEAM_Y_DIFF_ALLOWED',
+            new_col_name='AVG_TEAM_Y_DIFF_ALLOWED', order_idx_name='DATE', min_periods=5
         )
         data = data.merge(grouped_defensive_boxscores, on=['SEASON', 'DATE', 'OPP_TEAM'], how='left')
         self.regressors.append('AVG_TEAM_Y_DIFF_ALLOWED')
@@ -129,10 +132,12 @@ class PPSModel(object):
                 'TEAM_Y_AVG_P': x['AVG_PTS'].sum()/x['AVG_SP'].sum()
             })
         ).reset_index()
-        grouped_defensive_boxscores['TEAM_Y_DIFF_ALLOWED_P'] = grouped_defensive_boxscores['TEAM_Y_ALLOWED_P'] - grouped_defensive_boxscores['TEAM_Y_AVG_P']
+        grouped_defensive_boxscores['TEAM_Y_DIFF_ALLOWED_P'] = grouped_defensive_boxscores['TEAM_Y_ALLOWED_P'] - \
+            grouped_defensive_boxscores['TEAM_Y_AVG_P']
         grouped_defensive_boxscores = self.feature_creation.expanding_mean(
-            df=grouped_defensive_boxscores, group_col_names=['SEASON', 'OPP_TEAM', 'NORM_POS'], col_name='TEAM_Y_DIFF_ALLOWED_P',
-            new_col_name='AVG_TEAM_Y_DIFF_ALLOWED_P', order_idx_name='DATE', min_periods=5
+            df=grouped_defensive_boxscores, group_col_names=['SEASON', 'OPP_TEAM', 'NORM_POS'],
+            col_name='TEAM_Y_DIFF_ALLOWED_P', new_col_name='AVG_TEAM_Y_DIFF_ALLOWED_P', order_idx_name='DATE',
+            min_periods=5
         )
         data = data.merge(grouped_defensive_boxscores, on=['SEASON', 'DATE', 'OPP_TEAM', 'NORM_POS'], how='left')
         self.regressors.append('AVG_TEAM_Y_DIFF_ALLOWED_P')
@@ -166,7 +171,7 @@ class PPSModel(object):
             start_lineup.sort()
             start_lineup = '_'.join(start_lineup)
             data.loc[(game_id, team), 'START_LINEUP'] = start_lineup
-            
+
             stars = list(temp.loc[temp['AVG_PTS'] > 20, 'PLAYERID'].values)
             stars.sort()
             stars = '_'.join(stars)
@@ -174,16 +179,16 @@ class PPSModel(object):
         data = data.reset_index()
 
         data = self.feature_creation.expanding_weighted_mean(
-            df=data, group_col_names=['SEASON', 'START_LINEUP', 'PLAYERID'], col_name=self.regressand, weight_col_name='SECONDSPLAYED',
-            new_col_name='AVG_Y_STARTERS'
+            df=data, group_col_names=['SEASON', 'START_LINEUP', 'PLAYERID'], col_name=self.regressand,
+            weight_col_name='SECONDSPLAYED', new_col_name='AVG_Y_STARTERS'
         )
         data = self.feature_creation.expanding_weighted_mean(
-            df=data, group_col_names=['SEASON', 'STARS', 'PLAYERID'], col_name=self.regressand, weight_col_name='SECONDSPLAYED',
-            new_col_name='AVG_Y_STARS'
+            df=data, group_col_names=['SEASON', 'STARS', 'PLAYERID'], col_name=self.regressand,
+            weight_col_name='SECONDSPLAYED', new_col_name='AVG_Y_STARS'
         )
         data = self.feature_creation.expanding_weighted_mean(
-            df=data, group_col_names=['SEASON', 'START_LINEUP', 'PLAYERID'], col_name='PPPS', weight_col_name='SECONDSPLAYED',
-            new_col_name='AVG_PPPS_STARTERS'
+            df=data, group_col_names=['SEASON', 'START_LINEUP', 'PLAYERID'], col_name='PPPS',
+            weight_col_name='SECONDSPLAYED', new_col_name='AVG_PPPS_STARTERS'
         )
         data = self.feature_creation.expanding_weighted_mean(
             df=data, group_col_names=['SEASON', 'STARS', 'PLAYERID'], col_name='PPPS', weight_col_name='SECONDSPLAYED',
@@ -196,7 +201,9 @@ class PPSModel(object):
 
         # misc
         data['GP'] = 1
-        data = self.feature_creation.expanding_sum(df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='GP', new_col_name='COUNT_GP')
+        data = self.feature_creation.expanding_sum(
+            df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='GP', new_col_name='COUNT_GP'
+            )
         self.regressors.append('COUNT_GP')
         self.regressors.append('AVG_SP')
 
@@ -217,7 +224,7 @@ class PPSModel(object):
         data['AVG_PCR'] = data['AVG_PCR'].fillna(data['AVG_PCR'].mean())
 
         data['EWM_Y'] = data['EWM_Y'].fillna(data['AVG_Y'])
-        
+
         data['MA2_Y'] = data['MA2_Y'].fillna(data['AVG_Y'])
         data['MA8_Y'] = data['MA8_Y'].fillna(data['MA2_Y'])
         data['MA3_PPPS'] = data['MA3_PPPS'].fillna(data['AVG_PPPS'])
@@ -241,15 +248,13 @@ class PPSModel(object):
         return data
 
     def generate_weights(self, data):
-        sp_weight_func = lambda x: 1/(1 + np.exp((-0.80*x + 600)/180)) - 0.01
-        tsp_weight_func = lambda x: 1/(1 + np.exp((-0.175*x + 840)/300)) - 0.04
-
         data = self.feature_creation.expanding_sum(
             df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='SECONDSPLAYED', new_col_name='SUM_SP'
         )
 
         self.weight = 'WEIGHT'
-        data[self.weight] = data['SECONDSPLAYED'].apply(sp_weight_func) * data['SUM_SP'].apply(tsp_weight_func)
+        data[self.weight] = data['SECONDSPLAYED'].apply(WeightFunctions.game_seconds_played_weight) * \
+            data['SUM_SP'].apply(WeightFunctions.season_seconds_played_weight)
 
         return data
 
@@ -257,7 +262,7 @@ class PPSModel(object):
         if not self.created_features:
             raise Exception('Must create features before training model')
 
-        #drop games in which players played a minute or less
+        # drop games in which players played a minute or less
         self.train_data = self.train_data.loc[self.train_data['SECONDSPLAYED'] > 60]
 
         X = self.train_data[self.regressors]

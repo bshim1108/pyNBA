@@ -2,6 +2,7 @@ import sqlite3
 from sqlite3 import Error
 import pandas as pd
 
+
 class SQL(object):
     def __init__(self, db_file=r"/Users/brandonshimiaie/Projects/pyNBA/sqlite/db/nba.db"):
         self.db_file = db_file
@@ -167,7 +168,7 @@ class SQL(object):
                                             PRIMARY KEY (SITE, DATE, PLAYER)
                                         );"""
         self.excecute(sql_create_salaries_table)
-        
+
         sql_create_contests_table = """CREATE TABLE IF NOT EXISTS CONTESTS (
                                             SITE text NOT NULL,
                                             DATE text NOT NULL,
@@ -188,8 +189,6 @@ class SQL(object):
                                         );"""
         self.excecute(sql_create_contests_table)
 
-        # a = """DROP TABLE CONTESTINFO"""
-        # self.excecute(a)
         sql_create_contest_info_table = """CREATE TABLE IF NOT EXISTS CONTESTINFO (
                                             CONTESTID text NOT NULL,
                                             PRIZE float NOT NULL,
@@ -215,7 +214,7 @@ class SQL(object):
         self.excecute(sql_player, player)
 
     def insert_boxscore(self, boxscore):
-        sql_boxscore= """INSERT INTO BOXSCORES(GAMEID, PLAYERID, TEAM, OPP_TEAM, COMMENT, START, SECONDSPLAYED,
+        sql_boxscore = """INSERT INTO BOXSCORES(GAMEID, PLAYERID, TEAM, OPP_TEAM, COMMENT, START, SECONDSPLAYED,
                             PTS, FGM, FGA, FG3M, FG3A, FTM, FTA, PTS_OFF_TOV, PTS_2ND_CHANCE, PTS_FB,
                             PTS_PAINT, PCT_AST_2PM, PCT_AST_3PM, OREB,
                             OREB_PCT, DREB, DREB_PCT, AST, AST_PCT, AST_RATIO, STL, BLK, TOV,
@@ -226,7 +225,7 @@ class SQL(object):
         self.excecute(sql_boxscore, boxscore)
 
     def insert_shotchartdetail(self, shotchartdetail):
-        sql_shotchartdetail= """INSERT INTO SHOTCHARTDETAILS(GAMEID, GAMEEVENTID, PLAYERID, PERIOD, SECONDSREMAINING,
+        sql_shotchartdetail = """INSERT INTO SHOTCHARTDETAILS(GAMEID, GAMEEVENTID, PLAYERID, PERIOD, SECONDSREMAINING,
                             EVENTTYPE, ACTIONTYPE, SHOTTYPE, SHOTZONEBASIC, SHOTZONEAREA, SHOTZONERANGE,
                             SHOTDISTANCE)
                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -234,13 +233,13 @@ class SQL(object):
         self.excecute(sql_shotchartdetail, shotchartdetail)
 
     def insert_odds(self, odds):
-        sql_odds= """INSERT INTO ODDS(DATE, TEAM, PERIOD, POINTSPREAD, MONEYLINE, TOTAL)
+        sql_odds = """INSERT INTO ODDS(DATE, TEAM, PERIOD, POINTSPREAD, MONEYLINE, TOTAL)
                         VALUES(?, ?, ?, ?, ?, ?)
                     """
         self.excecute(sql_odds, odds)
 
     def insert_quarterly_boxscore(self, quarterly_boxscore):
-        sql_quarterly_boxscore= """INSERT INTO QUARTERLYBOXSCORES(SEASON, GAMEID, DATE, PLAYERID, QUARTER,
+        sql_quarterly_boxscore = """INSERT INTO QUARTERLYBOXSCORES(SEASON, GAMEID, DATE, PLAYERID, QUARTER,
                             SECONDSPLAYED, PTS, FGM, FGA, FG3M, FG3A, FTM, FTA, OREB, DREB, AST, STL, BLK, TOV,
                             PF, PLUSMINUS)
                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -248,13 +247,13 @@ class SQL(object):
         self.excecute(sql_quarterly_boxscore, quarterly_boxscore)
 
     def insert_salary(self, salary):
-        sql_salary= """INSERT INTO SALARIES(SITE, DATE, PLAYER, SALARY)
+        sql_salary = """INSERT INTO SALARIES(SITE, DATE, PLAYER, SALARY)
                         VALUES(?, ?, ?, ?)
                     """
         self.excecute(sql_salary, salary)
 
     def insert_contest(self, contest):
-        sql_contest= """INSERT INTO CONTESTS(SITE, DATE, SLATEID, SLATETYPE, GAMECOUNT, TEAMS,
+        sql_contest = """INSERT INTO CONTESTS(SITE, DATE, SLATEID, SLATETYPE, GAMECOUNT, TEAMS,
                             CONTESTID, CONTESTNAME, PRIZEPOOL, ENTRYFEE, TOPPRIZE, MAXENTRIES,
                             TOTALENTRIES, CASHLINE, TOPSCORE)
                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -262,7 +261,7 @@ class SQL(object):
         self.excecute(sql_contest, contest)
 
     def insert_contest_info(self, contest_info):
-        sql_contest_info= """INSERT INTO CONTESTINFO(CONTESTID, PRIZE, MINPOINTS, MAXPOINTS, MINRANK, MAXRANK)
+        sql_contest_info = """INSERT INTO CONTESTINFO(CONTESTID, PRIZE, MINPOINTS, MAXPOINTS, MINRANK, MAXRANK)
                         VALUES(?, ?, ?, ?, ?, ?)
                     """
         self.excecute(sql_contest_info, contest_info)

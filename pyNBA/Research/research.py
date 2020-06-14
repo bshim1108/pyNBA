@@ -5,6 +5,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 
+
 class Helpers(object):
     def __init__(self):
         pass
@@ -19,9 +20,9 @@ class Helpers(object):
             return "y"
 
     def visualize_dataframe(self, df, max_cat=12):
-        dic_cols = {col:self.utils_recognize_type(df, col, max_cat=max_cat) for col in df.columns}
+        dic_cols = {col: self.utils_recognize_type(df, col, max_cat=max_cat) for col in df.columns}
         heatmap = df.isnull()
-        for k,v in dic_cols.items():
+        for k, v in dic_cols.items():
             if v == "y":
                 heatmap[k] = heatmap[k].apply(lambda x: 0.5 if x is False else 1)
             else:
@@ -29,7 +30,10 @@ class Helpers(object):
         sns.heatmap(heatmap, cbar=False).set_title('Dataset Overview')
         plt.show()
         print("\033[1;37;40m Categerocial ", "\033[1;30;43m Numeric ", "\033[1;30;47m NaN ")
-        print('\nPercentage of rows containing at least one missing value:', 100*round((1 - len(df.dropna())/len(df)), 5))
+        print(
+            '\nPercentage of rows containing at least one missing value:',
+            100*round((1 - len(df.dropna())/len(df)), 5)
+            )
 
     def visualize_variable_distribution(self, df, x, log_boxplot=True, figsize=(12, 8)):
         fig, ax = plt.subplots(nrows=1, ncols=2,  sharex=False, sharey=False, figsize=figsize)
@@ -46,10 +50,16 @@ class Helpers(object):
         ax[0].axvline(des["75%"], ls='--')
         ax[0].grid(True)
         des = round(des, 5).apply(lambda x: str(x))
-        box = '\n'.join(("min: "+des["min"], "25%: "+des["25%"], "mean: "+des["mean"], "75%: "+des["75%"], "max: "+des["max"], "skew: "+des['skew']))
-        ax[0].text(0.95, 0.95, box, transform=ax[0].transAxes, fontsize=10, va='top', ha="right", bbox=dict(boxstyle='round', facecolor='white', alpha=1))
+        box = '\n'.join(
+            ("min: "+des["min"], "25%: "+des["25%"], "mean: "+des["mean"], "75%: "+des["75%"], "max: "+des["max"],
+             "skew: "+des['skew'])
+            )
+        ax[0].text(
+            0.95, 0.95, box, transform=ax[0].transAxes, fontsize=10, va='top', ha="right",
+            bbox=dict(boxstyle='round', facecolor='white', alpha=1)
+            )
 
-        # boxplot 
+        # boxplot
         temp_df = pd.DataFrame(df[x])
         if log_boxplot:
             ax[1].title.set_text('outliers (log scale)')
@@ -64,8 +74,9 @@ class Helpers(object):
 
         # bin plot
         breaks = np.quantile(df[x], q=np.linspace(0, 1, 11))
-        groups = df.groupby([pd.cut(df[x], bins=breaks, 
-                duplicates='drop')])[y].agg(['mean','median','size'])
+        groups = df.groupby(
+            [pd.cut(df[x], bins=breaks, duplicates='drop')]
+            )[y].agg(['mean', 'median', 'size'])
         fig, ax = plt.subplots(figsize=figsize)
         fig.suptitle(x+"   vs   "+y, fontsize=16)
         groups[["mean", "median"]].plot(kind="line", ax=ax)
@@ -76,8 +87,7 @@ class Helpers(object):
         plt.show()
 
         # scatter plot
-        sns.jointplot(x=x, y=y, data=df, dropna=True, kind='reg', 
-                    height=int((figsize[0]+figsize[1])/2) )
+        sns.jointplot(x=x, y=y, data=df, dropna=True, kind='reg', height=int((figsize[0]+figsize[1])/2))
         plt.show()
 
     def visualize_categorical_x_vs_y(self, df, x, y, figsize=(16, 6)):
@@ -89,12 +99,12 @@ class Helpers(object):
         # distribution
         ax[0].title.set_text('density')
         for i in df[x].unique():
-            sns.distplot(df[df[x]==i][y], hist=False, label=i, ax=ax[0])
+            sns.distplot(df[df[x] == i][y], hist=False, label=i, ax=ax[0])
         ax[0].grid(True)
 
         # stacked
         ax[1].title.set_text('bins')
-        breaks = np.quantile(df[y], q=np.linspace(0,1,11))
+        breaks = np.quantile(df[y], q=np.linspace(0, 1, 11))
         tmp = df.groupby([x, pd.cut(df[y], breaks, duplicates='drop')]).size().unstack().T
         tmp = tmp[df[x].unique()]
         tmp["tot"] = tmp.sum(axis=1)
@@ -102,7 +112,7 @@ class Helpers(object):
             tmp[col] = tmp[col] / tmp["tot"]
         tmp.drop("tot", axis=1).plot(kind='bar', stacked=True, ax=ax[1], legend=True, grid=True)
 
-        # boxplot   
+        # boxplot
         ax[2].title.set_text('outliers')
         sns.boxplot(x=x, y=y, data=df, ax=ax[2])
         ax[2].grid(True)

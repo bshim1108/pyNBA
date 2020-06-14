@@ -1,17 +1,17 @@
-from nba_api.stats.endpoints import (LeagueGameFinder, CommonPlayerInfo, CommonPlayerInfo, ShotChartDetail, 
-    BoxScoreTraditionalV2, BoxScoreAdvancedV2, BoxScoreMiscV2, BoxScoreScoringV2, LeagueDashPlayerBioStats,
-    PlayerDashboardByGameSplits)
-from nba_api.stats.static import teams
+from nba_api.stats.endpoints import (LeagueGameFinder, CommonPlayerInfo, ShotChartDetail, BoxScoreTraditionalV2,
+                                     BoxScoreAdvancedV2, BoxScoreMiscV2, BoxScoreScoringV2, LeagueDashPlayerBioStats,
+                                     PlayerDashboardByGameSplits)
 from pyNBA.Data.sql import SQL
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import reduce
 import pandas as pd
-import numpy as np
 import time
 import requests
 from bs4 import BeautifulSoup
-from pyNBA.Data.constants import (SEASONS, TRADITIONAL_BOXSCORE_COLUMNS, ADVANCED_BOXSCORE_COLUMNS, MISC_BOXSCORE_COLUMNS,
-    SCORING_BOXSCORE_COLUMNS, TEAM_NAME_TO_ABBREVIATION, ABBREVIATION_TO_SITE, ID_TO_SITE, MIN_CONTEST_DATE, BAD_CONTEST_DATES)
+from pyNBA.Data.constants import (SEASONS, TRADITIONAL_BOXSCORE_COLUMNS, ADVANCED_BOXSCORE_COLUMNS,
+                                  MISC_BOXSCORE_COLUMNS, SCORING_BOXSCORE_COLUMNS, TEAM_NAME_TO_ABBREVIATION,
+                                  ABBREVIATION_TO_SITE, ID_TO_SITE, MIN_CONTEST_DATE, BAD_CONTEST_DATES)
+
 
 class UpdateData(object):
     def __init__(self, sql):
@@ -24,7 +24,9 @@ class UpdateData(object):
 
         SEASONS.sort(reverse=True)
         for season in SEASONS:
-            games = LeagueGameFinder(league_id_nullable='00', season_nullable=season, season_type_nullable='Regular Season').get_data_frames()[0]
+            games = LeagueGameFinder(
+                league_id_nullable='00', season_nullable=season, season_type_nullable='Regular Season'
+                ).get_data_frames()[0]
             time.sleep(1.000)
             games = games.drop_duplicates(subset='GAME_ID')
             uninserted_games = games.loc[~games['GAME_ID'].isin(sql_ids)]
@@ -56,9 +58,9 @@ class UpdateData(object):
                 player = player.iloc[0]
 
                 player_id = str(player_id)
-                draft_year = int(player['DRAFT_YEAR']) if player['DRAFT_YEAR'] not in ['Undrafted' , '']  else -1
-                draft_round = int(player['DRAFT_ROUND']) if player['DRAFT_ROUND'] not in ['Undrafted' , ''] else -1
-                draft_number = int(player['DRAFT_NUMBER']) if player['DRAFT_NUMBER'] not in ['Undrafted' , '']  else -1
+                draft_year = int(player['DRAFT_YEAR']) if player['DRAFT_YEAR'] not in ['Undrafted', ''] else -1
+                draft_round = int(player['DRAFT_ROUND']) if player['DRAFT_ROUND'] not in ['Undrafted', ''] else -1
+                draft_number = int(player['DRAFT_NUMBER']) if player['DRAFT_NUMBER'] not in ['Undrafted', ''] else -1
                 weight = int(player['PLAYER_WEIGHT']) if player['PLAYER_WEIGHT'] != '' else -1
                 height = int(player['PLAYER_HEIGHT_INCHES']) if player['PLAYER_HEIGHT_INCHES'] != '' else -1
 
@@ -69,8 +71,8 @@ class UpdateData(object):
                 if birthdate != '':
                     birthdate = birthdate[0:10]
 
-                player = (player_id, player['PLAYER_NAME'], player_misc['POSITION'], player['COLLEGE'], player['COUNTRY'],
-                          height, weight, draft_year, draft_round, draft_number, birthdate)
+                player = (player_id, player['PLAYER_NAME'], player_misc['POSITION'], player['COLLEGE'],
+                          player['COUNTRY'], height, weight, draft_year, draft_round, draft_number, birthdate)
                 self.sql.insert_player(player)
                 sql_ids.append(player_id)
 
@@ -83,14 +85,16 @@ class UpdateData(object):
         for game_id in uninserted_game_ids:
             temp = []
 
-            traditional_boxscore = BoxScoreTraditionalV2(game_id=game_id).get_data_frames()[0][TRADITIONAL_BOXSCORE_COLUMNS]
+            traditional_boxscore = BoxScoreTraditionalV2(
+                game_id=game_id
+                ).get_data_frames()[0][TRADITIONAL_BOXSCORE_COLUMNS]
             advanced_boxscore = BoxScoreAdvancedV2(game_id=game_id).get_data_frames()[0][ADVANCED_BOXSCORE_COLUMNS]
             misc_boxscore = BoxScoreMiscV2(game_id=game_id).get_data_frames()[0][MISC_BOXSCORE_COLUMNS]
             scoring_boxscore = BoxScoreScoringV2(game_id=game_id, ).get_data_frames()[0][SCORING_BOXSCORE_COLUMNS]
             time.sleep(1.000)
 
             game_boxscore = reduce(lambda left, right: pd.merge(left, right, on=['GAME_ID', 'PLAYER_ID']),
-                [traditional_boxscore, advanced_boxscore, misc_boxscore, scoring_boxscore])
+                                   [traditional_boxscore, advanced_boxscore, misc_boxscore, scoring_boxscore])
             teams = game_boxscore['TEAM_ABBREVIATION'].unique()
             for _, player_boxscore in game_boxscore.groupby('PLAYER_ID'):
                 player_boxscore = player_boxscore.iloc[0]
@@ -102,30 +106,32 @@ class UpdateData(object):
 
                 if player_boxscore['MIN'] is None:
                     boxscore = (game_id, player_id, team, opp_team, comment,
-                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                    0, 0, 0, 0)
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 else:
                     minutes_played, seconds_played = player_boxscore['MIN'].split(':')
                     seconds_played = int(minutes_played)*60 + int(seconds_played)
                     start = 0 if player_boxscore['START_POSITION'] == '' else 1
 
                     boxscore = (game_id, player_id, team, opp_team, comment,
-                                    start, seconds_played, int(player_boxscore['PTS']), int(player_boxscore['FGM']),
-                                    int(player_boxscore['FGA']), int(player_boxscore['FG3M']), int(player_boxscore['FG3A']),
-                                    int(player_boxscore['FTM']), int(player_boxscore['FTA']), int(player_boxscore['PTS_OFF_TOV']),
-                                    int(player_boxscore['PTS_2ND_CHANCE']), int(player_boxscore['PTS_FB']), int(player_boxscore['PTS_PAINT']),
-                                    float(player_boxscore['PCT_AST_2PM']), float(player_boxscore['PCT_AST_3PM']),
-                                    int(player_boxscore['OREB']), float(player_boxscore['OREB_PCT']),
-                                    int(player_boxscore['DREB']), float(player_boxscore['DREB_PCT']), int(player_boxscore['AST']),
-                                    float(player_boxscore['AST_PCT']), float(player_boxscore['AST_RATIO']), int(player_boxscore['STL']),
-                                    int(player_boxscore['BLK']), int(player_boxscore['TO']),
-                                    int(player_boxscore['PF']), int(player_boxscore['PLUS_MINUS']), float(player_boxscore['USG_PCT']),
-                                    float(player_boxscore['PACE']))
+                                start, seconds_played, int(player_boxscore['PTS']), int(player_boxscore['FGM']),
+                                int(player_boxscore['FGA']), int(player_boxscore['FG3M']), int(player_boxscore['FG3A']),
+                                int(player_boxscore['FTM']), int(player_boxscore['FTA']),
+                                int(player_boxscore['PTS_OFF_TOV']), int(player_boxscore['PTS_2ND_CHANCE']),
+                                int(player_boxscore['PTS_FB']), int(player_boxscore['PTS_PAINT']),
+                                float(player_boxscore['PCT_AST_2PM']), float(player_boxscore['PCT_AST_3PM']),
+                                int(player_boxscore['OREB']), float(player_boxscore['OREB_PCT']),
+                                int(player_boxscore['DREB']), float(player_boxscore['DREB_PCT']),
+                                int(player_boxscore['AST']), float(player_boxscore['AST_PCT']),
+                                float(player_boxscore['AST_RATIO']), int(player_boxscore['STL']),
+                                int(player_boxscore['BLK']), int(player_boxscore['TO']), int(player_boxscore['PF']),
+                                int(player_boxscore['PLUS_MINUS']), float(player_boxscore['USG_PCT']),
+                                float(player_boxscore['PACE']))
                 temp.append(boxscore)
 
             for t in temp:
                 self.sql.insert_boxscore(t)
-                
+
     def update_shotchartdetail_data(self, game_player_tuples):
         query = """SELECT * FROM SHOTCHARTDETAILS"""
         sql_data = self.sql.select_data(query)
@@ -136,16 +142,20 @@ class UpdateData(object):
         for (game_id, player_id) in uninserted_game_player_tuples:
             temp = []
 
-            shotchartdetails = ShotChartDetail(team_id=0, player_id=player_id, game_id_nullable=game_id, context_measure_simple='FGA').get_data_frames()[0]
+            shotchartdetails = ShotChartDetail(
+                team_id=0, player_id=player_id, game_id_nullable=game_id, context_measure_simple='FGA'
+                ).get_data_frames()[0]
             time.sleep(1.000)
             for _, shotchartdetail in shotchartdetails.iterrows():
 
                 seconds_remaining = shotchartdetail['MINUTES_REMAINING']*60 + shotchartdetail['SECONDS_REMAINING']
-                shotchartdetail = (game_id, shotchartdetail['GAME_EVENT_ID'], player_id, shotchartdetail['PERIOD'], seconds_remaining, shotchartdetail['EVENT_TYPE'],
-                                    shotchartdetail['ACTION_TYPE'], shotchartdetail['SHOT_TYPE'], shotchartdetail['SHOT_ZONE_BASIC'],
-                                    shotchartdetail['SHOT_ZONE_AREA'], shotchartdetail['SHOT_ZONE_RANGE'], shotchartdetail['SHOT_DISTANCE'])
+                shotchartdetail = (game_id, shotchartdetail['GAME_EVENT_ID'], player_id, shotchartdetail['PERIOD'],
+                                   seconds_remaining, shotchartdetail['EVENT_TYPE'], shotchartdetail['ACTION_TYPE'],
+                                   shotchartdetail['SHOT_TYPE'], shotchartdetail['SHOT_ZONE_BASIC'],
+                                   shotchartdetail['SHOT_ZONE_AREA'], shotchartdetail['SHOT_ZONE_RANGE'],
+                                   shotchartdetail['SHOT_DISTANCE'])
                 temp.append(shotchartdetail)
-            
+
             for t in temp:
                 self.sql.insert_shotchartdetail(t)
 
@@ -159,55 +169,57 @@ class UpdateData(object):
             temp = []
 
             formatted_date = date.replace('-', '')
-            URL='https://www.sportsbookreview.com/betting-odds/nba-basketball/money-line/?date=' + formatted_date
+            URL = 'https://www.sportsbookreview.com/betting-odds/nba-basketball/money-line/?date=' + formatted_date
             page = requests.get(URL)
             soup = BeautifulSoup(page.content, 'html.parser')
 
             results = soup.find_all('a', class_='_3qi53')
             for result in results[::2]:
-                    href = result['href']
-                    URL = 'https://www.sportsbookreview.com' + href
+                href = result['href']
+                URL = 'https://www.sportsbookreview.com' + href
 
-                    page = requests.get(URL)
-                    soup = BeautifulSoup(page.content, 'html.parser')
-                    print(URL + '...')
+                page = requests.get(URL)
+                soup = BeautifulSoup(page.content, 'html.parser')
+                print(URL + '...')
 
-                    all_results = soup.find('section', class_='_2LZJ_')
-                    
-                    period_results = all_results.find_all('div', class_='_398eq')
+                all_results = soup.find('section', class_='_2LZJ_')
 
-                    for period_result in period_results:
-                        period = period_result.h2.text
+                period_results = all_results.find_all('div', class_='_398eq')
 
-                        teams = period_result.find_all('span', class_='_3O1Gx')
-                        lines = period_result.find_all('span', class_='opener')
+                for period_result in period_results:
+                    period = period_result.h2.text
 
-                        ps1_i = 2
-                        if lines[ps1_i].text == '-':
-                            ps2_i = ps1_i + 1
-                        else:
-                            ps2_i = ps1_i + 2
+                    teams = period_result.find_all('span', class_='_3O1Gx')
+                    lines = period_result.find_all('span', class_='opener')
 
-                        if lines[ps2_i].text == '-':
-                            ml1_i = ps2_i + 3
-                        else:
-                            ml1_i = ps2_i + 4
-                        ml2_i = ml1_i + 1
+                    ps1_i = 2
+                    if lines[ps1_i].text == '-':
+                        ps2_i = ps1_i + 1
+                    else:
+                        ps2_i = ps1_i + 2
 
-                        t1_i = ml2_i + 3
-                        if lines[t1_i].text == '-':
-                            t2_i = t1_i + 1
-                        else:
-                            t2_i = t1_i + 2
+                    if lines[ps2_i].text == '-':
+                        ml1_i = ps2_i + 3
+                    else:
+                        ml1_i = ps2_i + 4
+                    ml2_i = ml1_i + 1
 
-                        team_1 = TEAM_NAME_TO_ABBREVIATION[teams[0].text]
-                        odds_1 = (date, team_1, period, lines[ps1_i].text.replace('½', '.5'), lines[ml1_i].text, lines[t1_i].text.replace('½', '.5'))
-                        temp.append(odds_1)
+                    t1_i = ml2_i + 3
+                    if lines[t1_i].text == '-':
+                        t2_i = t1_i + 1
+                    else:
+                        t2_i = t1_i + 2
 
-                        team_2 = TEAM_NAME_TO_ABBREVIATION[teams[1].text]
-                        odds_2 = (date, team_2, period, lines[ps2_i].text.replace('½', '.5'), lines[ml2_i].text, lines[t2_i].text.replace('½', '.5'))
-                        temp.append(odds_2)
-        
+                    team_1 = TEAM_NAME_TO_ABBREVIATION[teams[0].text]
+                    odds_1 = (date, team_1, period, lines[ps1_i].text.replace('½', '.5'), lines[ml1_i].text,
+                              lines[t1_i].text.replace('½', '.5'))
+                    temp.append(odds_1)
+
+                    team_2 = TEAM_NAME_TO_ABBREVIATION[teams[1].text]
+                    odds_2 = (date, team_2, period, lines[ps2_i].text.replace('½', '.5'), lines[ml2_i].text,
+                              lines[t2_i].text.replace('½', '.5'))
+                    temp.append(odds_2)
+
             for t in temp:
                 self.sql.insert_odds(t)
 
@@ -221,7 +233,9 @@ class UpdateData(object):
         for (season, game_id, date, player_id) in uninserted_tuples:
             temp = []
 
-            quarterly_boxscore = PlayerDashboardByGameSplits(player_id=player_id, season=season, date_from_nullable=date, date_to_nullable=date).get_data_frames()[2]
+            quarterly_boxscore = PlayerDashboardByGameSplits(
+                player_id=player_id, season=season, date_from_nullable=date, date_to_nullable=date
+                ).get_data_frames()[2]
             time.sleep(1.000)
 
             for quarter, quarter_boxscore in quarterly_boxscore.groupby('GROUP_VALUE'):
@@ -230,12 +244,12 @@ class UpdateData(object):
                 seconds_played = int(quarter_boxscore['MIN']*60)
 
                 boxscore = (season, game_id, date, player_id, quarter, seconds_played,
-                                int(quarter_boxscore['PTS']), int(quarter_boxscore['FGM']),
-                                int(quarter_boxscore['FGA']), int(quarter_boxscore['FG3M']), int(quarter_boxscore['FG3A']),
-                                int(quarter_boxscore['FTM']), int(quarter_boxscore['FTA']),
-                                int(quarter_boxscore['OREB']), int(quarter_boxscore['DREB']), int(quarter_boxscore['AST']),
-                                int(quarter_boxscore['STL']), int(quarter_boxscore['BLK']), int(quarter_boxscore['TOV']),
-                                int(quarter_boxscore['PF']), int(quarter_boxscore['PLUS_MINUS']))
+                            int(quarter_boxscore['PTS']), int(quarter_boxscore['FGM']),
+                            int(quarter_boxscore['FGA']), int(quarter_boxscore['FG3M']), int(quarter_boxscore['FG3A']),
+                            int(quarter_boxscore['FTM']), int(quarter_boxscore['FTA']),
+                            int(quarter_boxscore['OREB']), int(quarter_boxscore['DREB']), int(quarter_boxscore['AST']),
+                            int(quarter_boxscore['STL']), int(quarter_boxscore['BLK']), int(quarter_boxscore['TOV']),
+                            int(quarter_boxscore['PF']), int(quarter_boxscore['PLUS_MINUS']))
                 temp.append(boxscore)
 
             for t in temp:
@@ -252,7 +266,9 @@ class UpdateData(object):
             for site_abbreviation in ABBREVIATION_TO_SITE:
                 date_list = date.split('-')
                 year, month, day = date_list[0], date_list[1], date_list[2]
-                URL = 'http://rotoguru1.com/cgi-bin/hyday.pl?game={}&mon={}&day={}&year={}'.format(site_abbreviation, month, day, year)
+                URL = 'http://rotoguru1.com/cgi-bin/hyday.pl?game={}&mon={}&day={}&year={}'.format(
+                    site_abbreviation, month, day, year
+                    )
                 page = requests.get(URL)
                 soup = BeautifulSoup(page.content, 'html.parser')
 
@@ -266,7 +282,7 @@ class UpdateData(object):
                     salary = int(salary.text.replace('$', '').replace(',', ''))
                     data = (ABBREVIATION_TO_SITE[site_abbreviation], date, player.text, salary)
                     temp.append(data)
-        
+
             for t in temp:
                 self.sql.insert_salary(t)
 
@@ -313,7 +329,7 @@ class UpdateData(object):
 
                 CONTEST_URL = 'https://resultsdb-api.rotogrinders.com/api/contests?slates={}&lean=true'.format(slate_id)
                 contest_data = requests.get(CONTEST_URL).json()
-                
+
                 for contest in contest_data:
                     if contest['sport'] != 3:
                         continue
@@ -335,21 +351,21 @@ class UpdateData(object):
                         top_prize = top['cash']
                     else:
                         continue
-                    
+
                     SUMMARY_URL = 'https://resultsdb-api.rotogrinders.com/api/slates/{}/summary'.format(slate_id)
 
                     try:
                         summary_data = requests.get(SUMMARY_URL).json()['winnerMap'][contest_id]
                         cash_line = summary_data['cashLine']
                         winning_score = summary_data['score']
-                    except:
+                    except Exception:
                         cash_line = None
                         winning_score = None
-                    
-                    data = (site, date, slate_id, slate_type, game_count, teams, contest_id, contest_name, prize_pool, entry_fee,
-                            top_prize, max_entries_per_user, entries, cash_line, winning_score)
+
+                    data = (site, date, slate_id, slate_type, game_count, teams, contest_id, contest_name, prize_pool,
+                            entry_fee, top_prize, max_entries_per_user, entries, cash_line, winning_score)
                     temp.append(data)
-        
+
             for t in temp:
                 self.sql.insert_contest(t)
 
@@ -370,10 +386,14 @@ class UpdateData(object):
 
             prizes = {}
             prev_prize = None
+            prev_points = None
+            prev_rank = None
 
             index = 0
             while True:
-                ENTRY_URL = 'https://resultsdb-api.rotogrinders.com/api/entries?_contestId={}&index={}'.format(contest_id, str(index))
+                ENTRY_URL = 'https://resultsdb-api.rotogrinders.com/api/entries?_contestId={}&index={}'.format(
+                    contest_id, str(index)
+                    )
                 entry_data = requests.get(ENTRY_URL).json()['entries']
 
                 for entry in entry_data:
@@ -388,25 +408,27 @@ class UpdateData(object):
                         prizes[prize] = {}
                         prizes[prize]['MAXPOINTS'] = points
                         prizes[prize]['MINRANK'] = rank
-                        
+
                         if prev_prize is not None:
                             prizes[prev_prize]['MINPOINTS'] = prev_points
                             prizes[prev_prize]['MAXRANK'] = prev_rank
-                        
+
                     prev_prize = prize
                     prev_rank = rank
                     prev_points = points
-                    
+
                 if prize == 0 or len(entry_data) == 0:
                     prizes[prize]['MINPOINTS'] = None
                     prizes[prize]['MAXRANK'] = None
                     break
-                    
+
                 index += 1
 
             for prize in prizes:
-                data = (contest_id, prize, prizes[prize]['MINPOINTS'], prizes[prize]['MAXPOINTS'], prizes[prize]['MINRANK'], prizes[prize]['MAXRANK'])
+                data = (contest_id, prize, prizes[prize]['MINPOINTS'], prizes[prize]['MAXPOINTS'],
+                        prizes[prize]['MINRANK'], prizes[prize]['MAXRANK'])
                 self.sql.insert_contest_info(data)
+
 
 class QueryData(object):
     def __init__(self):
@@ -435,7 +457,9 @@ class QueryData(object):
 
         game_data = self.query_game_data()
         player_data = self.query_player_data()
-        sql_data = sql_data.merge(game_data, left_on='GAMEID', right_on='ID').merge(player_data, left_on='PLAYERID', right_on='ID')
+        sql_data = sql_data.merge(game_data, left_on='GAMEID', right_on='ID').merge(
+            player_data, left_on='PLAYERID', right_on='ID'
+            )
         return sql_data
 
     def query_shotchartdetail_data(self):
@@ -480,7 +504,7 @@ class QueryData(object):
         query = """SELECT * FROM CONTESTS"""
         sql_data = self.sql.select_data(query)
         return sql_data
-    
+
     def query_contest_info_data(self):
         contest_data = self.query_contest_data()
         contest_ids = set(contest_data['CONTESTID'].unique())

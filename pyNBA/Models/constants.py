@@ -10,6 +10,6 @@ APS_MODEL_PARAMS = {'depth': 6, 'eval_metric': 'MAE', 'learning_rate': 0.02, 'nu
 
 RPS_MODEL_PARAMS = {'depth': 8, 'eval_metric': 'MAE', 'learning_rate': 0.01, 'num_boost_round': 5000}
 
-PPS_MODEL_PARAMS =  {'depth': 10, 'eval_metric': 'MAE', 'learning_rate': 0.02, 'num_boost_round': 5000}
+PPS_MODEL_PARAMS = {'depth': 10, 'eval_metric': 'MAE', 'learning_rate': 0.02, 'num_boost_round': 5000}
 
-MTPS_MODEL_PARAMS =  {'depth': 10, 'eval_metric': 'MAE', 'learning_rate': 0.02, 'num_boost_round': 5000}
+MTPS_MODEL_PARAMS = {'depth': 10, 'eval_metric': 'MAE', 'learning_rate': 0.02, 'num_boost_round': 5000}

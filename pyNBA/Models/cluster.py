@@ -1,12 +1,11 @@
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
-from sklearn import metrics
-from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import PCA
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 
 class Cluster(object):
     def __init__(self, df, cluster_cols):
@@ -24,34 +23,35 @@ class Cluster(object):
         dists = (k_means.transform(data)**2).sum(axis=1).round(2)
         return pd.DataFrame({'CLUSTER': clusters, 'CENTROID_DISTANCE': dists}, index=self.df.index)
 
+
 class Evaluate(object):
     def __init__(self, df, cluster_cols):
         self.df = df[cluster_cols]
 
     def compute_gap_statistic(self, data, n_refs=20, max_n_clusters=12):
         gaps = np.zeros((len(range(1, max_n_clusters+1)),))
-        results_df = pd.DataFrame({'k':[], 'gap':[]})
-    
+        results_df = pd.DataFrame({'k': [], 'gap': []})
+
         for gap_index, k in enumerate(range(1, max_n_clusters+1)):
             ref_disps = np.zeros(n_refs)
 
             for i in range(n_refs):
                 km = KMeans(k)
                 km.fit(data)
-                
+
                 ref_disp = km.inertia_
                 ref_disps[i] = ref_disp
 
             k_means = KMeans(k)
             k_means.fit(data)
-            
+
             orig_disp = km.inertia_
 
             gap = np.log(np.mean(ref_disps)) - np.log(orig_disp)
 
             gaps[gap_index] = gap
-            
-            results_df = results_df.append({'k':k, 'gap':gap}, ignore_index=True)
+
+            results_df = results_df.append({'k': k, 'gap': gap}, ignore_index=True)
 
         return (gaps.argmax() + 1, results_df)
 
@@ -70,7 +70,7 @@ class Evaluate(object):
                 k_means = KMeans(n_clusters=k)
                 k_means.fit(data)
                 sum_of_squared_distances.append(k_means.inertia_)
-                
+
             _, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
 
             ax1.plot(k_list, sum_of_squared_distances)
@@ -92,18 +92,18 @@ class Evaluate(object):
         scores = pca.transform(data)
         df['C1'] = scores[:, 0]
         df['C2'] = scores[:, 1]
-        
+
         df['CENTER_POINT'] = 0
         for c, temp in df.groupby('CLUSTER'):
             thresh = temp['CENTROID_DISTANCE'].quantile(0.05)
             df.loc[(df['CLUSTER'] == c) & (df['CENTROID_DISTANCE'] <= thresh), 'CENTER_POINT'] = 1
-            
+
         sns.scatterplot(df['C1'], df['C2'], hue=df['CLUSTER'], palette="Set1", s=60)
-        
+
         for x, y, name, is_center_point, pts in zip(df['C1'], df['C2'], df.index, df['CENTER_POINT'], df['PTS']):
             if is_center_point or pts > 16:
                 label = name
-                plt.annotate(label, (x,y), textcoords="offset points", xytext=(0,10), ha='center', fontsize=13)
-        
+                plt.annotate(label, (x, y), textcoords="offset points", xytext=(0, 10), ha='center', fontsize=13)
+
         plt.show()
         plt.close()
