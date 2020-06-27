@@ -5,12 +5,14 @@ from pyNBA.Data.sql import SQL
 from datetime import datetime
 from functools import reduce
 import pandas as pd
+from collections import Counter
 import time
 import requests
 from bs4 import BeautifulSoup
 from pyNBA.Data.constants import (SEASONS, TRADITIONAL_BOXSCORE_COLUMNS, ADVANCED_BOXSCORE_COLUMNS,
                                   MISC_BOXSCORE_COLUMNS, SCORING_BOXSCORE_COLUMNS, TEAM_NAME_TO_ABBREVIATION,
-                                  ABBREVIATION_TO_SITE, ID_TO_SITE, MIN_CONTEST_DATE, BAD_CONTEST_DATES)
+                                  ABBREVIATION_TO_SITE, ID_TO_SITE, MIN_CONTEST_DATE, BAD_CONTEST_DATES,
+                                  POSSIBLE_POSITIONS, BAD_CONTEST_IDS, BAD_OWNERSHIP_KEYS)
 
 
 class UpdateData(object):
@@ -272,15 +274,27 @@ class UpdateData(object):
                 page = requests.get(URL)
                 soup = BeautifulSoup(page.content, 'html.parser')
 
+                temp_positions = soup.find_all('td')
+                positions = []
+                for t in temp_positions:
+                    text = t.text
+                    text_list = text.split('/')
+                    is_position = True
+                    for text in text_list:
+                        if text not in POSSIBLE_POSITIONS:
+                            is_position = False
+                    if is_position:
+                        positions.append('_'.join(text_list))
+
                 players = soup.find_all('a', {'target': '_blank'})
                 players = [i for i in players if 'playrh' in i['href'] and i.text != 'Player Lookup']
 
                 salaries = soup.find_all('td', {'align': 'right'})
                 salaries = [i for i in salaries if '$' in i.text]
 
-                for player, salary in zip(players, salaries):
+                for player, position, salary in zip(players, positions, salaries):
                     salary = int(salary.text.replace('$', '').replace(',', ''))
-                    data = (ABBREVIATION_TO_SITE[site_abbreviation], date, player.text, salary)
+                    data = (ABBREVIATION_TO_SITE[site_abbreviation], date, player.text, position, salary)
                     temp.append(data)
 
             for t in temp:
@@ -316,16 +330,15 @@ class UpdateData(object):
                 slate_type = slate['slateTypeName']
                 game_count = slate['gameCount']
 
-                games = slate['slateGames']
-                teams = []
-                for game in games:
-                    home_team = game['teamHome']['hashtag']
-                    if home_team not in teams:
-                        teams.append(home_team)
-                    away_team = game['teamAway']['hashtag']
-                    if away_team not in teams:
-                        teams.append(away_team)
-                teams = '_'.join(teams)
+                players = slate['slatePlayers']
+                teams = Counter()
+                for player in players:
+                    if 'team' in player:
+                        team = player['team']
+                        teams[team] += 1
+                most_common = teams.most_common(game_count*2)
+                most_common = [i[0] for i in most_common]
+                teams = '_'.join(most_common)
 
                 CONTEST_URL = 'https://resultsdb-api.rotogrinders.com/api/contests?slates={}&lean=true'.format(slate_id)
                 contest_data = requests.get(CONTEST_URL).json()
@@ -372,18 +385,12 @@ class UpdateData(object):
     def update_contest_info_data(self, contest_ids):
         query = """SELECT * FROM CONTESTINFO"""
         sql_data = self.sql.select_data(query)
-        print(sql_data)
         sql_ids = set(sql_data['CONTESTID'].unique())
 
-        uninserted_contest_ids = list(contest_ids - sql_ids)
+        uninserted_contest_ids = list((contest_ids - sql_ids) - BAD_CONTEST_IDS)
 
-        i = 0
-        tot = len(uninserted_contest_ids)
         uninserted_contest_ids.sort()
         for contest_id in uninserted_contest_ids:
-            print('{}/{}'.format(str(i), str(tot)))
-            i += 1
-
             prizes = {}
             prev_prize = None
             prev_points = None
@@ -391,10 +398,12 @@ class UpdateData(object):
 
             index = 0
             while True:
-                ENTRY_URL = 'https://resultsdb-api.rotogrinders.com/api/entries?_contestId={}&index={}'.format(
-                    contest_id, str(index)
-                    )
+                ENTRY_URL = (
+                    "https://resultsdb-api.rotogrinders.com/api/entries?_contestId={}&sortBy=points&"
+                    "order=desc&index={}&users=false&isLive=false&incomplete=false").format(contest_id, str(index))
                 entry_data = requests.get(ENTRY_URL).json()['entries']
+                if len(entry_data) == 0 and (not bool(prizes)):
+                    break
 
                 for entry in entry_data:
                     rank = entry['rank']
@@ -428,6 +437,31 @@ class UpdateData(object):
                 data = (contest_id, prize, prizes[prize]['MINPOINTS'], prizes[prize]['MAXPOINTS'],
                         prizes[prize]['MINRANK'], prizes[prize]['MAXRANK'])
                 self.sql.insert_contest_info(data)
+
+    def update_ownership_data(self, slate_ids):
+        query = """SELECT * FROM OWNERSHIP"""
+        sql_data = self.sql.select_data(query)
+        sql_ids = set(sql_data['SLATEID'].unique())
+
+        uninserted_slate_ids = list(slate_ids - sql_ids)
+
+        uninserted_slate_ids.sort()
+        for slate_id in uninserted_slate_ids:
+            temp = []
+
+            URL = "https://resultsdb-api.rotogrinders.com/api/contest-ownership?_slateId={}".format(slate_id)
+            ownership_data = requests.get(URL).json()
+
+            for player_name in ownership_data:
+                player_ownership_data = ownership_data[player_name]
+                for contest_name in player_ownership_data:
+                    if contest_name not in BAD_OWNERSHIP_KEYS:
+                        ownership = player_ownership_data[contest_name]
+                        data = (slate_id, player_name, contest_name, ownership)
+                        temp.append(data)
+
+            for t in temp:
+                self.sql.insert_ownership(t)
 
 
 class QueryData(object):
@@ -510,5 +544,13 @@ class QueryData(object):
         contest_ids = set(contest_data['CONTESTID'].unique())
         self.update_data.update_contest_info_data(contest_ids)
         query = """SELECT * FROM CONTESTINFO"""
+        sql_data = self.sql.select_data(query)
+        return sql_data
+
+    def query_ownership_data(self):
+        contest_data = self.query_contest_data()
+        slate_ids = set(contest_data['SLATEID'].unique())
+        self.update_data.update_ownership_data(slate_ids)
+        query = """SELECT * FROM OWNERSHIP"""
         sql_data = self.sql.select_data(query)
         return sql_data

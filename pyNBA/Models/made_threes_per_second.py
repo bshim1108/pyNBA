@@ -22,7 +22,7 @@ class MTPSModel(object):
         self.generated_weights = False
         self.trained_model = False
 
-    def create_features(self, odds_data, sp_threshold=1200):
+    def create_features(self, odds_data, sp_threshold=60):
         data = pd.concat([self.train_data, self.test_data])
 
         data[self.regressand] = data['FG3M']/data['SECONDSPLAYED']
@@ -284,20 +284,14 @@ class MTPSModel(object):
         X = self.train_data[self.regressors]
         y = self.train_data[self.regressand]
         w = self.train_data[self.weight]
-        try:
-            self.model.fit(X, y, sample_weight=w, test_size=0.25, early_stopping_rounds=25)
-        except Exception as e:
-            print(e)
-            return self.train_data
+        self.model.fit(X, y, sample_weight=w, test_size=0.25, early_stopping_rounds=25)
 
         self.trained_model = True
 
     def predict(self):
         if not self.trained_model:
             raise Exception('Must train model before generating predictions')
-        try:
-            self.test_data['{}_HAT'.format(self.regressand)] = self.model.predict(self.test_data[self.regressors])
-        except Exception as e:
-            print(e)
-            return self.test_data
+
+        self.test_data['{}_HAT'.format(self.regressand)] = self.model.predict(self.test_data[self.regressors])
+
         return self.test_data[['GAMEID', 'PLAYERID', '{}_HAT'.format(self.regressand)]]

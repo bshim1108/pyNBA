@@ -18,7 +18,7 @@ class FeatureCreation(object):
         df = df.set_index(order_idx_name).sort_index()
         return df, original_idx_name
 
-    def merge_stat_to_df(self, stat_df, df, group_col_names, col_name, new_col_name, n_shift, order_idx_name='GAMEID'):
+    def merge_stat_to_df(self, stat_df, df, group_col_names, col_name, new_col_name, n_shift, order_idx_name='DATE'):
         index_name = df.index.name
 
         stat_df = stat_df.groupby(by=group_col_names).shift(n_shift)
@@ -33,7 +33,7 @@ class FeatureCreation(object):
         return df
 
     def expanding_mean(self, df, group_col_names, col_name, new_col_name, min_periods=1, n_shift=1,
-                       order_idx_name='GAMEID'):
+                       order_idx_name='DATE'):
         df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)
 
         temp = df.groupby(group_col_names)[col_name].expanding(min_periods=min_periods).mean()
@@ -48,7 +48,7 @@ class FeatureCreation(object):
         return df.set_index(original_idx_name)
 
     def expanding_weighted_mean(self, df, group_col_names, col_name, weight_col_name, new_col_name, min_periods=1,
-                                n_shift=1, order_idx_name='GAMEID'):
+                                n_shift=1, order_idx_name='DATE'):
         df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)
 
         df['weighted_col'] = df[col_name] * df[weight_col_name]
@@ -68,7 +68,7 @@ class FeatureCreation(object):
         return df.set_index(original_idx_name)
 
     def expanding_ewm(self, df, group_col_names, col_name, new_col_name, alpha, min_periods=1, n_shift=1,
-                      order_idx_name='GAMEID'):
+                      order_idx_name='DATE'):
         df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)
 
         temp = df.set_index(group_col_names, append=True)
@@ -86,7 +86,7 @@ class FeatureCreation(object):
         return df.set_index(original_idx_name)
 
     def expanding_sum(self, df, group_col_names, col_name, new_col_name, min_periods=1, n_shift=1,
-                      order_idx_name='GAMEID'):
+                      order_idx_name='DATE'):
         df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)
 
         temp = df.groupby(group_col_names)[col_name].expanding(min_periods=min_periods).sum()
@@ -101,7 +101,7 @@ class FeatureCreation(object):
         return df.set_index(original_idx_name)
 
     def rolling_mean(self, df, group_col_names, col_name, new_col_name, n_rolling, min_periods=None, n_shift=1,
-                     order_idx_name='GAMEID'):
+                     order_idx_name='DATE'):
         min_periods = min_periods or n_rolling
         df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)
 
@@ -118,7 +118,7 @@ class FeatureCreation(object):
         return df.set_index(original_idx_name)
 
     def rolling_weighted_mean(self, df, group_col_names, col_name, weight_col_name, new_col_name, n_rolling,
-                              min_periods=None, n_shift=1, order_idx_name='GAMEID'):
+                              min_periods=None, n_shift=1, order_idx_name='DATE'):
         min_periods = min_periods or n_rolling
         df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)
 
@@ -139,7 +139,7 @@ class FeatureCreation(object):
             return df
         return df.set_index(original_idx_name)
 
-    def lag(self, df, group_col_names, col_name, new_col_name, n_shift=1, order_idx_name='GAMEID'):
+    def lag(self, df, group_col_names, col_name, new_col_name, n_shift=1, order_idx_name='DATE'):
         df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)
 
         temp = df.set_index(group_col_names, append=True)[col_name]
@@ -153,8 +153,8 @@ class FeatureCreation(object):
             return df
         return df.set_index(original_idx_name)
 
-    def standard_deviation(self, df, group_col_names, col_name, new_col_name, min_periods=1, n_shift=1,
-                           order_idx_name='GAMEID'):
+    def expanding_standard_deviation(self, df, group_col_names, col_name, new_col_name, min_periods=1,
+                                     n_shift=1, order_idx_name='DATE'):
         df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)
 
         temp = df.groupby(group_col_names)[col_name].expanding(min_periods=min_periods).std()

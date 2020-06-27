@@ -164,6 +164,7 @@ class SQL(object):
                                             SITE text NOT NULL,
                                             DATE text NOT NULL,
                                             PLAYER text NOT NULL,
+                                            POSITION text NOT NULL,
                                             SALARY integer NOT NULL,
                                             PRIMARY KEY (SITE, DATE, PLAYER)
                                         );"""
@@ -199,6 +200,15 @@ class SQL(object):
                                             PRIMARY KEY (CONTESTID, PRIZE)
                                         );"""
         self.excecute(sql_create_contest_info_table)
+
+        sql_create_ownership_table = """CREATE TABLE IF NOT EXISTS OWNERSHIP (
+                                            SLATEID text NOT NULL,
+                                            PLAYERNAME text NOT NULL,
+                                            CONTESTNAME text NOT NULL,
+                                            OWNERSHIP float,
+                                            PRIMARY KEY (SLATEID, PLAYERNAME, CONTESTNAME)
+                                        );"""
+        self.excecute(sql_create_ownership_table)
 
     def insert_game(self, game):
         sql_game = """INSERT INTO GAMES(ID, SEASON, DATE, HTM, VTM, W)
@@ -247,8 +257,8 @@ class SQL(object):
         self.excecute(sql_quarterly_boxscore, quarterly_boxscore)
 
     def insert_salary(self, salary):
-        sql_salary = """INSERT INTO SALARIES(SITE, DATE, PLAYER, SALARY)
-                        VALUES(?, ?, ?, ?)
+        sql_salary = """INSERT INTO SALARIES(SITE, DATE, PLAYER, POSITION, SALARY)
+                        VALUES(?, ?, ?, ?, ?)
                     """
         self.excecute(sql_salary, salary)
 
@@ -265,6 +275,12 @@ class SQL(object):
                         VALUES(?, ?, ?, ?, ?, ?)
                     """
         self.excecute(sql_contest_info, contest_info)
+
+    def insert_ownership(self, ownership):
+        sql_ownership = """INSERT INTO OWNERSHIP(SLATEID, PLAYERNAME, CONTESTNAME, OWNERSHIP)
+                        VALUES(?, ?, ?, ?)
+                    """
+        self.excecute(sql_ownership, ownership)
 
     def select_data(self, query):
         return pd.read_sql_query(query, self.conn)

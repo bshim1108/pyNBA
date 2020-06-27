@@ -272,4 +272,5 @@ class APSModel(object):
             raise Exception('Must train model before generating predictions')
 
         self.test_data['{}_HAT'.format(self.regressand)] = self.model.predict(self.test_data[self.regressors])
+
         return self.test_data[['GAMEID', 'PLAYERID', '{}_HAT'.format(self.regressand)]]

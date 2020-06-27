@@ -22,7 +22,7 @@ class TPSModel(object):
         self.generated_weights = False
         self.trained_model = False
 
-    def create_features(self, odds_data, sp_threshold=1200):
+    def create_features(self, odds_data, sp_threshold=60):
         data = pd.concat([self.train_data, self.test_data])
 
         data[self.regressand] = data['TOV']/data['SECONDSPLAYED']
@@ -182,4 +182,5 @@ class TPSModel(object):
             raise Exception('Must train model before generating predictions')
 
         self.test_data['{}_HAT'.format(self.regressand)] = self.model.predict(self.test_data[self.regressors])
+
         return self.test_data[['GAMEID', 'PLAYERID', '{}_HAT'.format(self.regressand)]]

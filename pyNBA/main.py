@@ -7,5 +7,5 @@ if __name__ == "__main__":
     sql.create_tables()
 
     query_data = QueryData()
-    data = query_data.query_contest_info_data()
+    data = query_data.query_ownership_data()
     print(data)

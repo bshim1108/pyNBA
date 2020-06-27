@@ -1,4 +1,5 @@
 from pyNBA.Models.features import FeatureCreation
+from pyNBA.Data.constants import ROTO_NAME_TO_NBA_NAME
 
 
 class CleanData(object):
@@ -20,3 +21,10 @@ class CleanData(object):
         df = df.loc[~((df['AVG_SP'] > thresh) & (df['COMMENT'] == "DNP - Coach's Decision"))]
         df = df.drop(columns=['AVG_SP'])
         return df
+
+    def roto_name_to_nba_name(self, name):
+        name_list = name.split(',')
+        name = "{} {}".format(name_list[-1].lstrip(), ' '.join(name_list[:-1]))
+        if name in ROTO_NAME_TO_NBA_NAME:
+            return ROTO_NAME_TO_NBA_NAME[name]
+        return name
