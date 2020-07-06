@@ -156,7 +156,7 @@ class MTPSModel(object):
         )
 
         temp = data.dropna(subset=['AVG_SP', 'AVG_FG3A', 'FG3A', 'SECONDSPLAYED'])
-        temp = temp.groupby(['SEASON', 'GAMEID', 'TEAM']).apply(
+        temp = temp.groupby(['SEASON', 'DATE', 'TEAM']).apply(
             lambda x: pd.Series({
                 'TEAM_ACTIVE_AVG_ATPS': x['AVG_FG3A'].sum()/x['AVG_SP'].sum(),
                 'TEAM_ATPS': x['FG3A'].sum()/x['SECONDSPLAYED'].sum(),
@@ -170,7 +170,7 @@ class MTPSModel(object):
         temp['TEAM_ACTIVE_AVG_ATPS_DIFF'] = temp['TEAM_ACTIVE_AVG_ATPS'] - temp['AVG_TEAM_ATPS']
         temp['TEAM_Y_DIFF'] = temp['TEAM_Y'] - temp['TEAM_ACTIVE_AVG_Y']
 
-        data = data.merge(temp, on=['GAMEID', 'TEAM'], how='left')
+        data = data.merge(temp, on=['DATE', 'TEAM'], how='left')
         self.regressors.append('TEAM_ACTIVE_AVG_ATPS_DIFF')
 
         # regressand by lineup

@@ -152,7 +152,7 @@ class APSModel(object):
 
         # injuries
         temp = data.dropna(subset=['AVG_SP', 'AVG_AST', 'AST', 'SECONDSPLAYED'])
-        temp = temp.groupby(['SEASON', 'GAMEID', 'TEAM']).apply(
+        temp = temp.groupby(['SEASON', 'DATE', 'TEAM']).apply(
             lambda x: pd.Series({
                 'TEAM_ACTIVE_AVG_Y': x['AVG_AST'].sum()/x['AVG_SP'].sum(),
                 'TEAM_Y': x['AST'].sum()/x['SECONDSPLAYED'].sum()
@@ -163,7 +163,7 @@ class APSModel(object):
         )
         temp['TEAM_ACTIVE_AVG_Y_DIFF'] = temp['TEAM_ACTIVE_AVG_Y'] - temp['AVG_TEAM_Y']
         temp['TEAM_Y_DIFF'] = temp['TEAM_Y'] - temp['TEAM_ACTIVE_AVG_Y']
-        data = data.merge(temp, on=['GAMEID', 'TEAM'], how='left')
+        data = data.merge(temp, on=['DATE', 'TEAM'], how='left')
         self.regressors.append('TEAM_ACTIVE_AVG_Y_DIFF')
 
         # regressand by lineup

@@ -193,7 +193,7 @@ class RPSModel(object):
         )
 
         temp = data.dropna(subset=['DREB', 'AVG_DREB', 'SECONDSPLAYED', 'AVG_SP'])
-        temp = temp.groupby(['SEASON', 'GAMEID', 'TEAM']).apply(
+        temp = temp.groupby(['SEASON', 'DATE', 'TEAM']).apply(
             lambda x: pd.Series({
                 'TEAM_ACTIVE_AVG_DRPS': x['AVG_DREB'].sum()/x['AVG_SP'].sum(),
                 'TEAM_DRPS': x['DREB'].sum()/x['SECONDSPLAYED'].sum(),
@@ -205,7 +205,7 @@ class RPSModel(object):
             df=temp, group_col_names=['SEASON', 'TEAM'], col_name='TEAM_DRPS', new_col_name='AVG_TEAM_DRPS'
         )
         temp['TEAM_ACTIVE_AVG_DRPS_DIFF'] = temp['TEAM_ACTIVE_AVG_DRPS'] - temp['AVG_TEAM_DRPS']
-        data = data.merge(temp, on=['GAMEID', 'TEAM'], how='left')
+        data = data.merge(temp, on=['DATE', 'TEAM'], how='left')
         self.regressors.append('TEAM_ACTIVE_AVG_DRPS_DIFF')
 
         # regressand by lineup

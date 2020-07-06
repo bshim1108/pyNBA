@@ -40,12 +40,14 @@ class XGBoostRegressionModel(Model):
             eval_set = [(X_test, y_test)]
             self.model.fit(
                 X_train, y_train, sample_weight=sw_train, eval_set=eval_set, sample_weight_eval_set=sw_test,
-                early_stopping_rounds=early_stopping_rounds
+                early_stopping_rounds=early_stopping_rounds, verbose=0
                 )
         else:
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
             eval_set = [(X_test, y_test)]
-            self.model.fit(X_train, y_train, eval_set=eval_set, early_stopping_rounds=early_stopping_rounds)
+            self.model.fit(
+                X_train, y_train, eval_set=eval_set, early_stopping_rounds=early_stopping_rounds, verbose=0
+                )
 
 
 class CatBoostRegressionModel(Model):

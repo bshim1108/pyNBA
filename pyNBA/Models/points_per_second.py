@@ -147,7 +147,7 @@ class PPSModel(object):
             df=data, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='FGA', new_col_name='AVG_FGA'
         )
         temp = data.dropna(subset=['AVG_SP', 'AVG_FGA', 'FGA', 'SECONDSPLAYED'])
-        temp = temp.groupby(['SEASON', 'GAMEID', 'TEAM']).apply(
+        temp = temp.groupby(['SEASON', 'DATE', 'TEAM']).apply(
             lambda x: pd.Series({
                 'TEAM_ACTIVE_AVG_FGAPS': x['AVG_FGA'].sum()/x['AVG_SP'].sum(),
                 'TEAM_FGAPS': x['FGA'].sum()/x['SECONDSPLAYED'].sum(),
@@ -159,7 +159,7 @@ class PPSModel(object):
             df=temp, group_col_names=['SEASON', 'TEAM'], col_name='TEAM_FGAPS', new_col_name='AVG_TEAM_FGAPS'
         )
         temp['TEAM_ACTIVE_AVG_FGAPS_DIFF'] = temp['TEAM_ACTIVE_AVG_FGAPS'] - temp['AVG_TEAM_FGAPS']
-        data = data.merge(temp, on=['GAMEID', 'TEAM'], how='left')
+        data = data.merge(temp, on=['DATE', 'TEAM'], how='left')
         self.regressors.append('TEAM_ACTIVE_AVG_FGAPS_DIFF')
 
         # regressand by lineup

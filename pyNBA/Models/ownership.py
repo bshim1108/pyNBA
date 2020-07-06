@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from pyNBA.Data.constants import OWNERSHIP_NAME_TO_NBA_NAME, DB_TEAM_TO_NBA_TEAM
+from pyNBA.Data.constants import DB_TEAM_TO_NBA_TEAM
 from pyNBA.Models.helpers import CleanData
 from pyNBA.DFS.rules import FPCalculator
 
@@ -33,9 +33,9 @@ class OwnershipModel(object):
         train_index = self.train_data.set_index(['GAMEID', 'PLAYERID']).index
         test_index = self.test_data.set_index(['GAMEID', 'PLAYERID']).index
 
-        salary_data['NAME'] = salary_data['PLAYER'].apply(self.clean_data.roto_name_to_nba_name)
         salary_data = salary_data.loc[salary_data['SITE'] == self.site]
-        data = data.merge(salary_data, how='left', on=['DATE', 'NAME'])
+        data = data.merge(salary_data, on=['DATE', 'NAME'], how='left')
+        data = data.dropna(subset=['SALARY'])
 
         # player stat features
         CustomFPCalculator = FPCalculator(self.site)
@@ -90,9 +90,6 @@ class OwnershipModel(object):
             self.regressors.append(position)
 
         # historical ownership of player
-        ownership_data['NAME'] = ownership_data['PLAYERNAME'].apply(
-            lambda x: x if x not in OWNERSHIP_NAME_TO_NBA_NAME else OWNERSHIP_NAME_TO_NBA_NAME[x]
-            )
         ownership_data = ownership_data.merge(contest_data, on=['SLATEID', 'CONTESTNAME'], how='left')
         aggregated_ownership = ownership_data.groupby(['DATE', 'NAME']).apply(
             lambda x: pd.Series({
@@ -101,19 +98,22 @@ class OwnershipModel(object):
         ).reset_index()
 
         data = data.merge(aggregated_ownership, on=['DATE', 'NAME'], how='left')
+        data = data.dropna(subset=['TOTAL_OWNERSHIP'])
 
         data = feature_creation.expanding_mean(
-            df=data, group_col_names=['SEASON', 'NAME'], col_name='OWNERSHIP', new_col_name='AVG_OWNERSHIP'
+            df=data, group_col_names=['SEASON', 'NAME'], col_name='TOTAL_OWNERSHIP', new_col_name='AVG_OWNERSHIP'
         )
         self.regressors.append('AVG_OWNERSHIP')
 
         data = feature_creation.lag(
-            df=data, group_col_names=['SEASON', 'NAME'], col_name='OWNERSHIP', new_col_name='L1_OWNERSHIP', n_shift=1
+            df=data, group_col_names=['SEASON', 'NAME'], col_name='TOTAL_OWNERSHIP', new_col_name='L1_OWNERSHIP',
+            n_shift=1
         )
         self.regressors.append('L1_OWNERSHIP')
 
         data = feature_creation.rolling_mean(
-            df=data, group_col_names=['SEASON', 'NAME'], col_name='OWNERSHIP', new_col_name='MA5_OWNERSHIP', n_rolling=5
+            df=data, group_col_names=['SEASON', 'NAME'], col_name='TOTAL_OWNERSHIP', new_col_name='MA5_OWNERSHIP',
+            n_rolling=5
         )
         self.regressors.append('MA5_OWNERSHIP')
 
@@ -191,27 +191,25 @@ class OwnershipModel(object):
 
         slate_players['SALARY_FLOOR'] = slate_players['SALARY_BIN'].apply(lambda x: x.left)
 
-        slate_players = slate_players.set_index(['SLATEID', 'SINGLE_DFS_POSITION'])
-        slate_players['L1P_RANK'] = slate_players['VALUE'].groupby(level=[0, 1]).rank(method='min', ascending=False)
-        slate_players = slate_players.reset_index(0).reset_index(0)
+        slate_players['L1P_RANK'] = slate_players.groupby(
+            ['SLATEID', 'SINGLE_DFS_POSITION']
+            )['VALUE'].rank(method='min', ascending=False)
 
-        slate_players = slate_players.set_index(['SLATEID', 'LEVEL2_DFS_POSITION'])
-        slate_players['L2P_RANK'] = slate_players['VALUE'].groupby(level=[0, 1]).rank(method='min', ascending=False)
-        slate_players = slate_players.reset_index(0).reset_index(0)
+        slate_players['L2P_RANK'] = slate_players.groupby(
+            ['SLATEID', 'LEVEL2_DFS_POSITION']
+        )['VALUE'].rank(method='min', ascending=False)
 
-        slate_players = slate_players.set_index(['SLATEID', 'LEVEL2_DFS_POSITION', 'SALARY_FLOOR'])
-        slate_players['L2P_SB_RANK'] = slate_players['VALUE'].groupby(level=[0, 1, 2]).rank(
-            method='min', ascending=False
-            )
-        slate_players = slate_players.reset_index(0).reset_index(0).reset_index(0)
+        slate_players['L2P_SB_RANK'] = slate_players.groupby(
+            ['SLATEID', 'LEVEL2_DFS_POSITION', 'SALARY_FLOOR']
+        )['VALUE'].rank(method='min', ascending=False)
 
-        slate_players = slate_players.set_index(['SLATEID'])
-        slate_players['L3P_RANK'] = slate_players['VALUE'].groupby(level=[0]).rank(method='min', ascending=False)
-        slate_players = slate_players.reset_index(0)
+        slate_players['L3P_RANK'] = slate_players.groupby(
+            ['SLATEID']
+            )['VALUE'].rank(method='min', ascending=False)
 
-        slate_players = slate_players.set_index(['SLATEID', 'SALARY_FLOOR'])
-        slate_players['L3P_SB_RANK'] = slate_players['VALUE'].groupby(level=[0, 1]).rank(method='min', ascending=False)
-        slate_players = slate_players.reset_index(0).reset_index(0)
+        slate_players['L3P_SB_RANK'] = slate_players.groupby(
+            ['SLATEID', 'SALARY_FLOOR']
+            )['VALUE'].rank(method='min', ascending=False)
 
         slate_data = slate_players.groupby(['DATE', 'SLATEID', 'NAME']).apply(
             lambda x: pd.Series({
@@ -266,8 +264,6 @@ class OwnershipModel(object):
         data['TOTAL'] = data['TOTAL'].fillna(data['TOTAL'].mean())
         data['POINTSPREAD'] = data['POINTSPREAD'].fillna(0)
 
-        data['L1P_SB_COUNT'] = data['L1P_SB_COUNT'].fillna(0)
-        data['L2P_SB_COUNT'] = data['L2P_SB_COUNT'].fillna(0)
         data['L3P_SB_COUNT'] = data['L3P_SB_COUNT'].fillna(0)
 
         # we can predict Y for a player as long as AVG_Y is not nan
@@ -289,6 +285,8 @@ class OwnershipModel(object):
         if not self.trained_model:
             raise Exception('Must train model before generating predictions')
 
-        self.test_data['{}_HAT'.format(self.regressand)] = self.model.predict(self.test_data[self.regressors])
+        output_column = '{}_HAT'.format(self.regressand)
 
-        return self.test_data[['GAMEID', 'PLAYERID', '{}_HAT'.format(self.regressand)]]
+        self.test_data[output_column] = self.model.predict(self.test_data[self.regressors])
+
+        return self.test_data[['DATE', 'SLATEID', 'CONTESTID', 'NAME', output_column]], output_column

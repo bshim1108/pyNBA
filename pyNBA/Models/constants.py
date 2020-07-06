@@ -14,6 +14,13 @@ PPS_MODEL_PARAMS = {'depth': 10, 'eval_metric': 'MAE', 'learning_rate': 0.02, 'n
 
 MTPS_MODEL_PARAMS = {'depth': 10, 'eval_metric': 'MAE', 'learning_rate': 0.02, 'num_boost_round': 5000}
 
-OWNERSHIP_MODEL_PARAMS = {'TODO': True}
+OWNERSHIP_MODEL_PARAMS = {
+    'colsample_bytree': 1, 'eta': 0.05, 'eval_metric': 'mae', 'max_depth': 10, 'n_estimators': 1500,
+    'subsample': 0.9, 'tree_method': 'hist'
+    }
+
+TOPSCORE_MODEL_PARAMS = {
+    'eta': 0.05, 'eval_metric': 'mae', 'max_depth': 6, 'n_estimators': 5000, 'tree_method': 'hist'
+    }
 
 DEFAULT_STD = 0.25
