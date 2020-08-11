@@ -1,0 +1,198 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  23 JUL 2020 12:34
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**Documentation.tex
+(./Documentation.tex
+LaTeX2e <2020-02-02> patch level 5
+L3 programming layer <2020-03-06>
+(/usr/local/texlive/2020/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2019/12/20 v1.4l Standard LaTeX document class
+(/usr/local/texlive/2020/texmf-dist/tex/latex/base/size10.clo
+File: size10.clo 2019/12/20 v1.4l Standard LaTeX file (size option)
+)
+\c@part=\count167
+\c@section=\count168
+\c@subsection=\count169
+\c@subsubsection=\count170
+\c@paragraph=\count171
+\c@subparagraph=\count172
+\c@figure=\count173
+\c@table=\count174
+\abovecaptionskip=\skip47
+\belowcaptionskip=\skip48
+\bibindent=\dimen134
+)
+(/usr/local/texlive/2020/texmf-dist/tex/latex/l3backend/l3backend-pdfmode.def
+File: l3backend-pdfmode.def 2020-03-12 L3 backend support: PDF mode
+\l__kernel_color_stack_int=\count175
+\l__pdf_internal_box=\box45
+)
+(./Documentation.aux)
+\openout1 = `Documentation.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 7.
+LaTeX Font Info:    ... okay on input line 7.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 9.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 9.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 9.
+ [1
+
+{/usr/local/texlive/2020/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+Underfull \hbox (badness 10000) in paragraph at lines 20--27
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 20--27
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 20--27
+
+ []
+
+[1]
+Underfull \hbox (badness 10000) in paragraph at lines 30--33
+
+ []
+
+[2]
+Underfull \hbox (badness 10000) in paragraph at lines 36--42
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 36--42
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 36--42
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 36--42
+
+ []
+
+[3]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 48.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 48.
+
+Underfull \hbox (badness 10000) in paragraph at lines 56--71
+
+ []
+
+
+Overfull \hbox (76.17686pt too wide) in paragraph at lines 56--71
+\OT1/cmr/m/n/10 2. Quinn Emanuel Urquhart & Sul-li-van, LLP. 2018. https://www.
+jdsupra.com/legalnews/august-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 56--71
+
+ []
+
+
+Overfull \hbox (8.97311pt too wide) in paragraph at lines 56--71
+\OT1/cmr/m/n/10 3. Nover, Scott. 2020. https://www.vox.com/2020/1/29/21112491/d
+aily-fantasy-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 56--71
+
+ []
+
+
+Overfull \hbox (60.36205pt too wide) in paragraph at lines 56--71
+\OT1/cmr/m/n/10 4. Har-well, Drew. 2015. http://www.dailyherald.com/article/201
+51012/business/151019683/ 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 56--71
+
+ []
+
+
+Overfull \hbox (45.6674pt too wide) in paragraph at lines 56--71
+\OT1/cmr/m/n/10 fantasy-sports-market-size-is-expected-to-reach-more-than-1-5-b
+illion-by-2024-1028445951 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 56--71
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 56--71
+
+ []
+
+
+Overfull \hbox (44.33424pt too wide) in paragraph at lines 56--71
+\OT1/cmr/m/n/10 7. Hunter, Vielma and Za-man. 2019. http://www.mit.edu/ jvielma
+/publications/Picking-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 56--71
+
+ []
+
+
+Overfull \hbox (120.83444pt too wide) in paragraph at lines 56--71
+\OT1/cmr/m/n/10 8. Haugh and Sin-gal. 2018. http://www.sloansportsconference.co
+m/wp-content/uploads/2018/02/1001.pdf 
+ []
+
+[4] (./Documentation.aux) ) 
+Here is how much of TeX's memory you used:
+ 393 strings out of 480608
+ 6636 string characters out of 5903631
+ 249610 words of memory out of 5000000
+ 16355 multiletter control sequences out of 15000+600000
+ 537274 words of font info for 40 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 25i,6n,19p,2230b,199s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/
+cm-super/cm-super-ts1.enc}</usr/local/texlive/2020/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmmi10.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmr10.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmr12.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmr17.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmr7.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/c
+m/cmti10.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/cm-super/sf
+rm1000.pfb>
+Output written on Documentation.pdf (5 pages, 109864 bytes).
+PDF statistics:
+ 57 PDF objects out of 1000 (max. 8388607)
+ 40 compressed objects within 1 object stream
+ 0 named destinations out of 1000 (max. 500000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+

@@ -465,27 +465,31 @@ class UpdateData(object):
 
 
 class QueryData(object):
-    def __init__(self):
+    def __init__(self, update=False):
         self.sql = SQL()
         self.sql.create_connection()
+        self.update = update
         self.update_data = UpdateData(sql=self.sql)
 
     def query_game_data(self):
-        self.update_data.update_game_data()
+        if self.update:
+            self.update_data.update_game_data()
         query = """SELECT * FROM GAMES"""
         sql_data = self.sql.select_data(query)
         return sql_data
 
     def query_player_data(self):
-        self.update_data.update_player_data()
+        if self.update:
+            self.update_data.update_player_data()
         query = """SELECT * FROM PLAYERS"""
         sql_data = self.sql.select_data(query)
         return sql_data
 
     def query_boxscore_data(self):
-        game_data = self.query_game_data()
-        game_ids = game_data['ID'].tolist()
-        self.update_data.update_boxscore_data(game_ids)
+        if self.update:
+            game_data = self.query_game_data()
+            game_ids = game_data['ID'].tolist()
+            self.update_data.update_boxscore_data(game_ids)
         query = """SELECT * FROM BOXSCORES"""
         sql_data = self.sql.select_data(query)
 
@@ -497,60 +501,67 @@ class QueryData(object):
         return sql_data
 
     def query_shotchartdetail_data(self):
-        boxscore_data = self.query_boxscore_data()
-        subset = boxscore_data.loc[boxscore_data['FGA'] > 0, ['GAMEID', 'PLAYERID']]
-        game_player_tuples = set([tuple(x) for x in subset.to_numpy()])
-        self.update_data.update_shotchartdetail_data(game_player_tuples)
+        if self.update:
+            boxscore_data = self.query_boxscore_data()
+            subset = boxscore_data.loc[boxscore_data['FGA'] > 0, ['GAMEID', 'PLAYERID']]
+            game_player_tuples = set([tuple(x) for x in subset.to_numpy()])
+            self.update_data.update_shotchartdetail_data(game_player_tuples)
         query = """SELECT * FROM SHOTCHARTDETAILS"""
         sql_data = self.sql.select_data(query)
         return sql_data
 
     def query_odds_data(self):
-        game_data = self.query_game_data()
-        game_dates = set(game_data['DATE'].unique())
-        self.update_data.update_odds_data(game_dates)
+        if self.update:
+            game_data = self.query_game_data()
+            game_dates = set(game_data['DATE'].unique())
+            self.update_data.update_odds_data(game_dates)
         query = """SELECT * FROM ODDS"""
         sql_data = self.sql.select_data(query)
         return sql_data
 
     def query_quarterly_boxscore_data(self):
-        boxscore_data = self.query_boxscore_data()
-        boxscore_data = boxscore_data.loc[~(boxscore_data['SECONDSPLAYED'] == 0)]
-        subset = boxscore_data[['SEASON', 'GAMEID', 'DATE', 'PLAYERID']]
-        tuples = set([tuple(x) for x in subset.to_numpy()])
-        self.update_data.update_quarterly_boxscore_data(tuples)
+        if self.update:
+            boxscore_data = self.query_boxscore_data()
+            boxscore_data = boxscore_data.loc[~(boxscore_data['SECONDSPLAYED'] == 0)]
+            subset = boxscore_data[['SEASON', 'GAMEID', 'DATE', 'PLAYERID']]
+            tuples = set([tuple(x) for x in subset.to_numpy()])
+            self.update_data.update_quarterly_boxscore_data(tuples)
         query = """SELECT * FROM QUARTERLYBOXSCORES"""
         sql_data = self.sql.select_data(query)
         return sql_data
 
     def query_salary_data(self):
-        game_data = self.query_game_data()
-        game_dates = set(game_data['DATE'].unique())
-        self.update_data.update_salary_data(game_dates)
+        if self.update:
+            game_data = self.query_game_data()
+            game_dates = set(game_data['DATE'].unique())
+            self.update_data.update_salary_data(game_dates)
         query = """SELECT * FROM SALARIES"""
         sql_data = self.sql.select_data(query)
         return sql_data
 
     def query_contest_data(self):
-        game_data = self.query_game_data()
-        game_dates = set(game_data['DATE'].unique())
-        self.update_data.update_contest_data(game_dates)
+        if self.update:
+            game_data = self.query_game_data()
+            game_dates = set(game_data['DATE'].unique())
+            self.update_data.update_contest_data(game_dates)
         query = """SELECT * FROM CONTESTS"""
         sql_data = self.sql.select_data(query)
         return sql_data
 
     def query_contest_info_data(self):
-        contest_data = self.query_contest_data()
-        contest_ids = set(contest_data['CONTESTID'].unique())
-        self.update_data.update_contest_info_data(contest_ids)
+        if self.update:
+            contest_data = self.query_contest_data()
+            contest_ids = set(contest_data['CONTESTID'].unique())
+            self.update_data.update_contest_info_data(contest_ids)
         query = """SELECT * FROM CONTESTINFO"""
         sql_data = self.sql.select_data(query)
         return sql_data
 
     def query_ownership_data(self):
-        contest_data = self.query_contest_data()
-        slate_ids = set(contest_data['SLATEID'].unique())
-        self.update_data.update_ownership_data(slate_ids)
+        if self.update:
+            contest_data = self.query_contest_data()
+            slate_ids = set(contest_data['SLATEID'].unique())
+            self.update_data.update_ownership_data(slate_ids)
         query = """SELECT * FROM OWNERSHIP"""
         sql_data = self.sql.select_data(query)
         return sql_data

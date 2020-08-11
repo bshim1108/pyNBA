@@ -9,6 +9,7 @@ from pyNBA.Models.features import FeatureCreation
 from pyNBA.Models.base import XGBoostRegressionModel
 
 from pyNBA.Models.constants import OWNERSHIP_MODEL_PARAMS, DEFAULT_STD
+from pyNBA.Data.constants import OWNERSHIP_NAME_TO_NBA_NAME
 
 
 class OwnershipModel(object):
@@ -34,8 +35,7 @@ class OwnershipModel(object):
         test_index = self.test_data.set_index(['GAMEID', 'PLAYERID']).index
 
         salary_data = salary_data.loc[salary_data['SITE'] == self.site]
-        data = data.merge(salary_data, on=['DATE', 'NAME'], how='left')
-        data = data.dropna(subset=['SALARY'])
+        data = data.merge(salary_data, on=['DATE', 'NAME'], how='inner')
 
         # player stat features
         CustomFPCalculator = FPCalculator(self.site)
@@ -48,32 +48,33 @@ class OwnershipModel(object):
             axis=1
         )
 
-        feature_creation = FeatureCreation()
-
-        data = feature_creation.expanding_mean(
+        data = self.feature_creation.expanding_mean(
             df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='DKFP', new_col_name='AVG_DKFP'
         )
+        self.regressors.append('AVG_DKFP')
 
         data['VALUE'] = data['AVG_DKFP']/data['SALARY']
         self.regressors.append('VALUE')
 
-        data = feature_creation.lag(
+        data = self.feature_creation.lag(
             df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='DKFP', new_col_name='L1_DKFP',
             n_shift=1
         )
         self.regressors.append('L1_DKFP')
 
-        data = feature_creation.rolling_mean(
+        data = self.feature_creation.rolling_mean(
             df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='DKFP', new_col_name='MA5_DKFP', n_rolling=5
         )
         self.regressors.append('MA5_DKFP')
 
-        data = feature_creation.lag(
+        data = self.feature_creation.lag(
             df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='SALARY', new_col_name='L1_SALARY', n_shift=1
         )
+        data['SALARY_CHANGE'] = data['SALARY'] - data['L1_SALARY']
         self.regressors.append('SALARY')
+        self.regressors.append('SALARY_CHANGE')
 
-        data = feature_creation.expanding_standard_deviation(
+        data = self.feature_creation.expanding_standard_deviation(
             df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='DKFP', new_col_name='STD_DKFP', min_periods=5
         )
         self.regressors.append('STD_DKFP')
@@ -84,34 +85,41 @@ class OwnershipModel(object):
         data['NUM_POSITIONS'] = data['DFS_POSITIONS'].apply(lambda x: len(x) if isinstance(x, list) else np.nan)
         self.regressors.append('NUM_POSITIONS')
 
-        for position in ['SF', 'PG', 'C']:
+        for position in ['SG', 'PG', 'C']:
             data[position] = 0
             data.loc[data['DFS_POSITION'].str.contains(position), position] = 1
             self.regressors.append(position)
 
         # historical ownership of player
-        ownership_data = ownership_data.merge(contest_data, on=['SLATEID', 'CONTESTNAME'], how='left')
+        ownership_data['NAME'] = ownership_data['PLAYERNAME'].apply(
+            lambda x: x if x not in OWNERSHIP_NAME_TO_NBA_NAME else OWNERSHIP_NAME_TO_NBA_NAME[x]
+        )
+        ownership_data = ownership_data.merge(contest_data, on=['SLATEID', 'CONTESTNAME'], how='inner')
+        ownership_data = ownership_data.groupby(['DATE', 'SLATEID', 'GAMECOUNT', 'NAME']).apply(
+            lambda x: pd.Series({
+                'OWNERSHIP': (x['OWNERSHIP']*x['TOTALENTRIES']).sum()/x['TOTALENTRIES'].sum()
+            })
+        ).reset_index()
+
         aggregated_ownership = ownership_data.groupby(['DATE', 'NAME']).apply(
             lambda x: pd.Series({
                 'TOTAL_OWNERSHIP': x['OWNERSHIP'].mean()
             })
         ).reset_index()
+        data = data.merge(aggregated_ownership, on=['DATE', 'NAME'], how='inner')
 
-        data = data.merge(aggregated_ownership, on=['DATE', 'NAME'], how='left')
-        data = data.dropna(subset=['TOTAL_OWNERSHIP'])
-
-        data = feature_creation.expanding_mean(
+        data = self.feature_creation.expanding_mean(
             df=data, group_col_names=['SEASON', 'NAME'], col_name='TOTAL_OWNERSHIP', new_col_name='AVG_OWNERSHIP'
         )
         self.regressors.append('AVG_OWNERSHIP')
 
-        data = feature_creation.lag(
+        data = self.feature_creation.lag(
             df=data, group_col_names=['SEASON', 'NAME'], col_name='TOTAL_OWNERSHIP', new_col_name='L1_OWNERSHIP',
             n_shift=1
         )
         self.regressors.append('L1_OWNERSHIP')
 
-        data = feature_creation.rolling_mean(
+        data = self.feature_creation.rolling_mean(
             df=data, group_col_names=['SEASON', 'NAME'], col_name='TOTAL_OWNERSHIP', new_col_name='MA5_OWNERSHIP',
             n_rolling=5
         )
@@ -131,7 +139,7 @@ class OwnershipModel(object):
         grouped_defensive_boxscores['DvP'] = grouped_defensive_boxscores['TEAM_DKFP_ALLOWED_P'] - \
             grouped_defensive_boxscores['TEAM_DKFP_AVG_P']
 
-        grouped_defensive_boxscores = feature_creation.expanding_mean(
+        grouped_defensive_boxscores = self.feature_creation.expanding_mean(
             df=grouped_defensive_boxscores, group_col_names=['SEASON', 'OPP_TEAM', 'NORM_POS'], col_name='DvP',
             new_col_name='AVG_DvP', order_idx_name='DATE', min_periods=5
         )
@@ -148,13 +156,15 @@ class OwnershipModel(object):
         self.regressors.append('POINTSPREAD')
 
         # slate info
+        self.regressors.append('GAMECOUNT')
+
         slates = contest_data.loc[contest_data['SITE'] == self.site, ['DATE', 'SLATEID', 'TEAMS']].drop_duplicates()
         slates['TEAMS'] = slates['TEAMS'].apply(lambda x: x.split('_'))
         slates = slates.explode('TEAMS').rename(columns={"TEAMS": "TEAM"})
         slates['TEAM'] = slates['TEAM'].apply(lambda x: x if x not in DB_TEAM_TO_NBA_TEAM else DB_TEAM_TO_NBA_TEAM[x])
 
         slate_players = data[['DATE', 'TEAM', 'NAME', 'DFS_POSITIONS', 'SALARY', 'VALUE']].merge(
-            slates, on=['DATE', 'TEAM'], how='left'
+            slates, on=['DATE', 'TEAM'], how='inner'
             )
         slate_players['SALARY_BIN'] = pd.cut(
             slate_players['SALARY'], bins=list(range(3000, 15000, 1000)), duplicates='drop', include_lowest=True
@@ -170,10 +180,24 @@ class OwnershipModel(object):
         ).reset_index().dropna()
         slate_players = slate_players.merge(all_temp, on=['SLATEID', 'SINGLE_DFS_POSITION'], how='left')
 
+        sb_temp = slate_players.groupby(['SLATEID', 'SINGLE_DFS_POSITION', 'SALARY_BIN']).apply(
+            lambda x: pd.Series({
+                'L1P_SB_COUNT': x['NAME'].count()
+            })
+        ).reset_index().dropna()
+        slate_players = slate_players.merge(sb_temp, on=['SLATEID', 'SINGLE_DFS_POSITION', 'SALARY_BIN'], how='left')
+
         L1_TO_L2 = {'PG': 'G', 'SG': 'G', 'SF': 'F', 'PF': 'F', 'C': 'C'}
         slate_players['LEVEL2_DFS_POSITION'] = slate_players['SINGLE_DFS_POSITION'].apply(
             lambda x: L1_TO_L2[x] if isinstance(x, str) else np.nan
             )
+
+        all_temp = slate_players.groupby(['SLATEID', 'LEVEL2_DFS_POSITION']).apply(
+            lambda x: pd.Series({
+                'L2P_COUNT': x.loc[x['VALUE'] > MIN_VALUE, 'NAME'].count()
+            })
+        ).reset_index().dropna()
+        slate_players = slate_players.merge(all_temp, on=['SLATEID', 'LEVEL2_DFS_POSITION'], how='left')
 
         all_temp = slate_players.groupby(['SLATEID']).apply(
             lambda x: pd.Series({
@@ -193,30 +217,27 @@ class OwnershipModel(object):
 
         slate_players['L1P_RANK'] = slate_players.groupby(
             ['SLATEID', 'SINGLE_DFS_POSITION']
-            )['VALUE'].rank(method='min', ascending=False)
-
-        slate_players['L2P_RANK'] = slate_players.groupby(
-            ['SLATEID', 'LEVEL2_DFS_POSITION']
         )['VALUE'].rank(method='min', ascending=False)
 
-        slate_players['L2P_SB_RANK'] = slate_players.groupby(
-            ['SLATEID', 'LEVEL2_DFS_POSITION', 'SALARY_FLOOR']
+        slate_players['L1P_SB_RANK'] = slate_players.groupby(
+            ['SLATEID', 'SINGLE_DFS_POSITION', 'SALARY_FLOOR']
         )['VALUE'].rank(method='min', ascending=False)
 
         slate_players['L3P_RANK'] = slate_players.groupby(
             ['SLATEID']
-            )['VALUE'].rank(method='min', ascending=False)
+        )['VALUE'].rank(method='min', ascending=False)
 
         slate_players['L3P_SB_RANK'] = slate_players.groupby(
             ['SLATEID', 'SALARY_FLOOR']
-            )['VALUE'].rank(method='min', ascending=False)
+        )['VALUE'].rank(method='min', ascending=False)
 
         slate_data = slate_players.groupby(['DATE', 'SLATEID', 'NAME']).apply(
             lambda x: pd.Series({
                 'L1P_COUNT': x['L1P_COUNT'].mean(),
                 'L1P_RANK': x['L1P_RANK'].mean(),
-                'L2P_RANK': x['L2P_RANK'].mean(),
-                'L2P_SB_RANK': x['L2P_SB_RANK'].mean(),
+                'L1P_SB_COUNT': x['L1P_SB_COUNT'].mean(),
+                'L1P_SB_RANK': x['L1P_SB_RANK'].mean(),
+                'L2P_COUNT': x['L2P_COUNT'].mean(),
                 'L3P_COUNT': x['L3P_COUNT'].mean(),
                 'L3P_RANK': x['L3P_RANK'].mean(),
                 'L3P_SB_COUNT': x['L3P_SB_COUNT'].mean(),
@@ -226,16 +247,19 @@ class OwnershipModel(object):
 
         self.regressors.append('L1P_COUNT')
         self.regressors.append('L1P_RANK')
-        self.regressors.append('L2P_RANK')
-        self.regressors.append('L2P_SB_RANK')
+        self.regressors.append('L1P_SB_COUNT')
+        self.regressors.append('L1P_SB_RANK')
+        self.regressors.append('L2P_COUNT')
         self.regressors.append('L3P_COUNT')
         self.regressors.append('L3P_RANK')
         self.regressors.append('L3P_SB_COUNT')
         self.regressors.append('L3P_SB_RANK')
 
-        # contest info
-        self.regressors.append('TOTALENTRIES')
-        self.regressors.append('GAMECOUNT')
+        data['GP'] = 1
+        data = self.feature_creation.expanding_sum(
+            df=data, group_col_names=['SEASON', 'PLAYERID'], col_name='GP', new_col_name='COUNT_GP'
+            )
+        self.regressors.append('COUNT_GP')
 
         data = self.preprocess(data, slate_data, ownership_data)
         data = data.set_index(['GAMEID', 'PLAYERID'])
@@ -248,11 +272,13 @@ class OwnershipModel(object):
         self.created_features = True
 
     def preprocess(self, data, slate_data, ownership_data):
-        ownership_data = ownership_data.merge(slate_data, on=['DATE', 'SLATEID', 'NAME'], how='left')
-        data = ownership_data.merge(data, on=['DATE', 'NAME'], how='left')
+        ownership_data = ownership_data.merge(slate_data, on=['DATE', 'SLATEID', 'NAME'], how='inner')
+        data = ownership_data.merge(data, on=['DATE', 'NAME'], how='inner')
 
         data['L1_DKFP'] = data['L1_DKFP'].fillna(data['AVG_DKFP'])
         data['MA5_DKFP'] = data['MA5_DKFP'].fillna(data['AVG_DKFP'])
+
+        data['SALARY_CHANGE'] = data['SALARY_CHANGE'].fillna(0)
 
         data['STD_DKFP'] = data['STD_DKFP'].fillna(DEFAULT_STD*data['AVG_DKFP'])
 
@@ -264,6 +290,7 @@ class OwnershipModel(object):
         data['TOTAL'] = data['TOTAL'].fillna(data['TOTAL'].mean())
         data['POINTSPREAD'] = data['POINTSPREAD'].fillna(0)
 
+        data['L1P_SB_COUNT'] = data['L1P_SB_COUNT'].fillna(0)
         data['L3P_SB_COUNT'] = data['L3P_SB_COUNT'].fillna(0)
 
         # we can predict Y for a player as long as AVG_Y is not nan
@@ -289,4 +316,4 @@ class OwnershipModel(object):
 
         self.test_data[output_column] = self.model.predict(self.test_data[self.regressors])
 
-        return self.test_data[['DATE', 'SLATEID', 'CONTESTID', 'NAME', output_column]], output_column
+        return self.test_data[['DATE', 'SLATEID', 'NAME', output_column]], output_column

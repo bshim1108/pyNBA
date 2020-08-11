@@ -74,7 +74,6 @@ ROTO_NAME_TO_NBA_NAME = {
     'C.J. McCollum': 'CJ McCollum',
     'J.R. Smith': 'JR Smith',
     'Wes Matthews': 'Wesley Matthews',
-    'Perry Jones III': 'Perry Jones',
     'James Ennis': 'James Ennis III',
     'Marcus Morris': 'Marcus Morris Sr.',
     'Otto Porter': 'Otto Porter Jr.',

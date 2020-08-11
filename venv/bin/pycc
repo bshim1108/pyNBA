@@ -1,0 +1,3 @@
+#!/Users/brandonshimiaie/Projects/pyNBA/venv/bin/python
+from numba.pycc import main
+main()
