@@ -81,3 +81,34 @@ Determine the factors that influence a player's Points Per Second (PPS).
 - Injuries
     - APS of players playing vs average APS of team
     - Player PPS/APS by starting lineup
+
+# Data Analysis
+Summarize the characteristics of the dataset.
+
+First, I will pull the boxscore data and drop the unessesary rows.
+
+``` r
+query_data = QueryData()
+clean_data = CleanData()
+
+# pull boxscore data
+boxscores = query_data.query_boxscore_data()
+
+# we are only interested in the boxscores of healthy and non-resting players
+boxscores = clean_data.drop_rows_player_injured(boxscores)
+boxscores = clean_data.drop_rows_player_rest(boxscores)
+
+pd.set_option('display.max_columns', None)
+display(boxscores.head())
+```
+
+I need to determine the type of each column, as well as the proportion of missing data.
+
+``` r
+helpers = Helpers()
+
+plt.rcParams["figure.figsize"] = (16, 8)
+helpers.visualize_dataframe(boxscores)
+```
+
+![](NBA_eda_report_files/figure-markdown_github/unnamed-chunk-10-1.png)
