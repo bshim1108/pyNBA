@@ -1,26 +1,15 @@
-NBA Daily Fantasy Exploration
+Finding Edge in Daily Fantasy Basketball [WIP]
 ================
-Ian Whitestone
-January 17, 2017
-
-Table of Contents
------------------
-
--   [Introduction](#introduction)
--   [Data Import & Cleaning](#data_import)
--   [Feature Engineering](#features)
--   [Univariate Analysis](#uni_analysis)
--   [Bivariate Analysis](#bi_analysis)
--   [Multivariate Analysis](#multi_analysis)
--   [Final Plots and Summary](#final)
--   [Reflection](#reflection)
+Brandon Shimiaie
 
 <a name="introduction"></a>Introduction
 ---------------------------------------
 
-[Daily fantasy sports](https://en.wikipedia.org/wiki/Daily_fantasy_sports) (DFS) are a subset of fantasy sports, where participants construct lineups based on the games occuring on a given day. Lineups are subject to various constraints, such as a salary cap and having a minimum number of players at each position. As with other fantasy sports, player's fantasy points are based on their actual performance in real life. As a result, a key component of being a successful DFS player is the ability to project a player's total points for a given night.
+The objective of this study is to develop a strategy that generates positive ROI by entering National Basketball Association (NBA) Daily Fantasy Sports (DFS) contests. My attempt to complete this objective is motivated by the ostensible alpha in DFS competitions, caused by "retail players" who possess limited domain knowledge, employ minimal strategy, and comprise approximately 80\% of all DFS players [1]. Advancing prior work that aimed to generate a profit in DFS, namely Haugh and Singal (2018) and Hunter, Vielma and Zaman (2019), I describe both an approximation of the optimal solution to the DFS problem, and the concrete pipeline that backtests a time-optimized greedy strategy.
 
-This study focuses on the NBA DFS, with a particular emphasis on examining factors that influence a player's score. The NBA data used in the study is sourced from Erik Berg's [API](https://erikberg.com/api). The study covers NBA data from the 2012-2013 season, up until the 2015-2016 season. Fantasy points are calculated using Fanduel's scoring system, described below. Unlike other sports, all positions in the NBA are scored using the same system.
+Overview of Daily Fantasy Sports
+
+On May 14, 2018, the United States Supreme Court paved the way for the expansion of legalized sports gambling with its decision in \textit{Murphy v. Nat’l Collegiate Athletic Ass’n}, 138 S. Ct. 1461 (2018). The court held that the Professional and Amateur Sports Protection Act (“PASPA”) — the federal law that for over twenty-five years prohibited states from passing any new laws authorizing gambling on professional or amateur sporting events — was an unconstitutional violation of states’ rights [2]. Currently, some form of DFS is legal and operational in 43 states and the District of Columbia. As a result, the amount of public involvement in DFS has steadily increased. In a December presentation to investors, DraftKings reported \$213 million in revenue in 2019 with 60\% of the market share, indicating the DFS industry brought in more than \$350 million in revenue in 2019 [3]. Moreover, the fantasy sports market size is expected to reach more than \$1.5 billion by 2024 [5]. As the interest in DFS has grown, so has the competitiveness of the market. Many websites have been created with the purpose of providing DFS analysis to the public, such as Fantasy Cruncher, Fantasy Labs, and Rotogrinders. These sites provide up-to-date player news, player performance projections, lineup optimizers, and more. Despite the public's access to advanced analysis and strategy, "sharks" who use sophisticated and proprietary techniques continue to make a consistent profit. The ruling of DFS as a skill-based game is strongly evidenced by the fact that the top 1\% take 90\% of the profits and pay 40\% of the entry fees [4]. Currently, the two dominant DFS platforms are DraftKings and Fanduel.
 
 -   3-pt FG = 3pts
 -   2-pt FG = 2pts
