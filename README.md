@@ -12,7 +12,7 @@ Example: Projecting Points Per Second
 
 https://github.com/bshim1108/pyNBA/blob/master/pyNBA/Research/PointsPerSecond.ipynb
 
-Example: Backtest Results
+Backtest Results
 ---------------------------------------
 
 https://github.com/bshim1108/pyNBA/blob/master/pyNBA/Research/Backtest.ipynb
