@@ -1,3 +1,5 @@
+from nba_api.stats.library.parameters import PlayTypeNullable
+
 SECONDS_MODEL_PARAMS = {'depth': 10, 'eval_metric': 'MAE', 'learning_rate': 0.01, 'num_boost_round': 5000}
 
 SPS_MODEL_PARAMS = {'depth': 6, 'eval_metric': 'MAE', 'learning_rate': 0.01, 'num_boost_round': 5000}
@@ -24,3 +26,9 @@ TOPSCORE_MODEL_PARAMS = {
     }
 
 DEFAULT_STD = 0.35
+
+PLAY_TYPES = [
+    PlayTypeNullable.transition, PlayTypeNullable.pr_ball_handler, PlayTypeNullable.pr_roll_man, PlayTypeNullable.post_up,
+    PlayTypeNullable.spot_up, PlayTypeNullable.handoff, PlayTypeNullable.cut, PlayTypeNullable.off_screen,
+    PlayTypeNullable.putbacks, PlayTypeNullable.isolation
+]

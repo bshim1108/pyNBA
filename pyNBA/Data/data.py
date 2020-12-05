@@ -13,7 +13,7 @@ from pyNBA.Data.constants import (SEASONS, TRADITIONAL_BOXSCORE_COLUMNS, ADVANCE
                                   MISC_BOXSCORE_COLUMNS, SCORING_BOXSCORE_COLUMNS, TEAM_NAME_TO_ABBREVIATION,
                                   ABBREVIATION_TO_SITE, ID_TO_SITE, MIN_CONTEST_DATE, BAD_CONTEST_DATES,
                                   POSSIBLE_POSITIONS, BAD_CONTEST_IDS, BAD_OWNERSHIP_KEYS)
-
+from pyNBA.Data.helpers import Helpers
 
 class UpdateData(object):
     def __init__(self, sql):
@@ -79,6 +79,8 @@ class UpdateData(object):
                 sql_ids.append(player_id)
 
     def update_boxscore_data(self, game_ids):
+        helpers = Helpers()
+
         query = """SELECT * FROM BOXSCORES"""
         sql_data = self.sql.select_data(query)
         sql_ids = list(sql_data['GAMEID'].unique())
@@ -87,18 +89,19 @@ class UpdateData(object):
         for game_id in uninserted_game_ids:
             temp = []
 
-            traditional_boxscore = BoxScoreTraditionalV2(
+            attempts_boxscores = helpers.get_attempts_boxscores(game_id)
+            traditional_boxscores = BoxScoreTraditionalV2(
                 game_id=game_id
                 ).get_data_frames()[0][TRADITIONAL_BOXSCORE_COLUMNS]
-            advanced_boxscore = BoxScoreAdvancedV2(game_id=game_id).get_data_frames()[0][ADVANCED_BOXSCORE_COLUMNS]
-            misc_boxscore = BoxScoreMiscV2(game_id=game_id).get_data_frames()[0][MISC_BOXSCORE_COLUMNS]
-            scoring_boxscore = BoxScoreScoringV2(game_id=game_id, ).get_data_frames()[0][SCORING_BOXSCORE_COLUMNS]
+            advanced_boxscores = BoxScoreAdvancedV2(game_id=game_id).get_data_frames()[0][ADVANCED_BOXSCORE_COLUMNS]
+            misc_boxscores = BoxScoreMiscV2(game_id=game_id).get_data_frames()[0][MISC_BOXSCORE_COLUMNS]
+            scoring_boxscores = BoxScoreScoringV2(game_id=game_id).get_data_frames()[0][SCORING_BOXSCORE_COLUMNS]
             time.sleep(1.000)
 
-            game_boxscore = reduce(lambda left, right: pd.merge(left, right, on=['GAME_ID', 'PLAYER_ID']),
-                                   [traditional_boxscore, advanced_boxscore, misc_boxscore, scoring_boxscore])
-            teams = game_boxscore['TEAM_ABBREVIATION'].unique()
-            for _, player_boxscore in game_boxscore.groupby('PLAYER_ID'):
+            game_boxscores = reduce(lambda left, right: pd.merge(left, right, on=['GAME_ID', 'PLAYER_ID']),
+                                   [attempts_boxscores, traditional_boxscores, advanced_boxscores, misc_boxscores, scoring_boxscores])
+            teams = game_boxscores['TEAM_ABBREVIATION'].unique()
+            for _, player_boxscore in game_boxscores.groupby('PLAYER_ID'):
                 player_boxscore = player_boxscore.iloc[0]
 
                 player_id = str(player_boxscore['PLAYER_ID'])
@@ -128,7 +131,16 @@ class UpdateData(object):
                                 float(player_boxscore['AST_RATIO']), int(player_boxscore['STL']),
                                 int(player_boxscore['BLK']), int(player_boxscore['TO']), int(player_boxscore['PF']),
                                 int(player_boxscore['PLUS_MINUS']), float(player_boxscore['USG_PCT']),
-                                float(player_boxscore['PACE']))
+                                float(player_boxscore['PACE']), float(player_boxscore['POSS']),
+                                int(player_boxscore['TOTAL_ATTEMPTS']), int(player_boxscore['TOTAL_PTS']),
+                                int(player_boxscore['TOTAL_FTA']), int(player_boxscore['TOTAL_FTM']),
+                                int(player_boxscore['SHOT_ATTEMPTS']), int(player_boxscore['SHOT_PTS']),
+                                int(player_boxscore['SHOT_FTA']), int(player_boxscore['SHOT_FTM']),
+                                int(player_boxscore['SFOUL_ATTEMPTS']), int(player_boxscore['SFOUL_PTS']),
+                                int(player_boxscore['SFOUL_FTA']), int(player_boxscore['SFOUL_FTM']),
+                                int(player_boxscore['PFOUL_ATTEMPTS']), int(player_boxscore['PFOUL_PTS']),
+                                int(player_boxscore['PFOUL_FTA']), int(player_boxscore['PFOUL_FTM']),
+                                int(player_boxscore['TFOUL_PTS']))
                 temp.append(boxscore)
 
             for t in temp:
@@ -168,30 +180,33 @@ class UpdateData(object):
 
         uninserted_game_dates = game_dates - sql_dates
         for date in uninserted_game_dates:
+            print(date)
             temp = []
 
             formatted_date = date.replace('-', '')
             URL = 'https://www.sportsbookreview.com/betting-odds/nba-basketball/money-line/?date=' + formatted_date
             page = requests.get(URL)
+            time.sleep(1.000)
             soup = BeautifulSoup(page.content, 'html.parser')
 
-            results = soup.find_all('a', class_='_3qi53')
+            results = soup.find_all('a', class_='gradientContainer-3iN6G')
             for result in results[::2]:
                 href = result['href']
                 URL = 'https://www.sportsbookreview.com' + href
 
                 page = requests.get(URL)
+                time.sleep(1.000)
                 soup = BeautifulSoup(page.content, 'html.parser')
                 print(URL + '...')
 
-                all_results = soup.find('section', class_='_2LZJ_')
+                all_results = soup.find('section', class_='mainColumn-iBrA5')
 
-                period_results = all_results.find_all('div', class_='_398eq')
+                period_results = all_results.find_all('div', class_='container-2fbfV')
 
                 for period_result in period_results:
                     period = period_result.h2.text
 
-                    teams = period_result.find_all('span', class_='_3O1Gx')
+                    teams = period_result.find_all('span', class_='participantBox-3ar9Y')
                     lines = period_result.find_all('span', class_='opener')
 
                     ps1_i = 2

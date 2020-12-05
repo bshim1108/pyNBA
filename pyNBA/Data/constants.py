@@ -1,10 +1,36 @@
 SEASONS = ['2014-15', '2015-16', '2016-17', '2017-18', '2018-19', '2019-20']
+SEASON_TO_REGULAR_SEASON_DATES = {
+    '2014-15': {
+        'START': '2014-11-28',
+        'END': '2015-04-15'
+    },
+    '2015-16': {
+        'START': '2015-11-27',
+        'END': '2016-04-13'
+    },
+    '2016-17': {
+        'START': '2016-11-25',
+        'END': '2017-04-12'
+    },
+    '2017-18': {
+        'START': '2017-11-17',
+        'END': '2018-04-11'
+    },
+    '2018-19': {
+        'START': '2018-11-16',
+        'END': '2019-04-10'
+    },
+    '2019-20': {
+        'START': '2019-11-22',
+        'END': '2020-04-15'
+    }
+}
 
 TRADITIONAL_BOXSCORE_COLUMNS = ['GAME_ID', 'PLAYER_ID', 'TEAM_ABBREVIATION', 'START_POSITION', 'MIN',
                                 'PTS', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB',
                                 'AST', 'STL', 'BLK', 'TO', 'PF', 'PLUS_MINUS', 'COMMENT']
 ADVANCED_BOXSCORE_COLUMNS = ['GAME_ID', 'PLAYER_ID', 'OREB_PCT', 'DREB_PCT', 'AST_PCT', 'AST_RATIO',
-                             'USG_PCT', 'PACE']
+                             'USG_PCT', 'PACE', 'POSS']
 MISC_BOXSCORE_COLUMNS = ['GAME_ID', 'PLAYER_ID', 'PTS_OFF_TOV',
                          'PTS_2ND_CHANCE', 'PTS_FB', 'PTS_PAINT']
 SCORING_BOXSCORE_COLUMNS = ['GAME_ID', 'PLAYER_ID', 'PCT_AST_2PM',

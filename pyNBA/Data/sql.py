@@ -95,7 +95,25 @@ class SQL(object):
                                         PF integer NOT NULL,
                                         PLUSMINUS integer NOT NULL,
                                         USG_PCT real NOT NULL,
-                                        PACE integer NOT NULL,
+                                        PACE real NOT NULL,
+                                        POSS integer NOT NULL,
+                                        TOTAL_ATTEMPTS integer NOT NULL,
+                                        TOTAL_PTS integer NOT NULL,
+                                        TOTAL_FTA integer NOT NULL,
+                                        TOTAL_FTM integer NOT NULL,
+                                        SHOT_ATTEMPTS integer NOT NULL,
+                                        SHOT_PTS integer NOT NULL,
+                                        SHOT_FTA integer NOT NULL,
+                                        SHOT_FTM integer NOT NULL,
+                                        SFOUL_ATTEMPTS integer NOT NULL,
+                                        SFOUL_PTS integer NOT NULL,
+                                        SFOUL_FTA integer NOT NULL,
+                                        SFOUL_FTM integer NOT NULL,
+                                        PFOUL_ATTEMPTS integer NOT NULL,
+                                        PFOUL_PTS integer NOT NULL,
+                                        PFOUL_FTA integer NOT NULL,
+                                        PFOUL_FTM integer NOT NULL,
+                                        TFOUL_PTS integer NOT NULL,
                                         PRIMARY KEY (GAMEID, PLAYERID),
                                         FOREIGN KEY (GAMEID) REFERENCES GAMES (ID),
                                         FOREIGN KEY (PLAYERID) REFERENCES PLAYERS (ID)
@@ -228,9 +246,11 @@ class SQL(object):
                             PTS, FGM, FGA, FG3M, FG3A, FTM, FTA, PTS_OFF_TOV, PTS_2ND_CHANCE, PTS_FB,
                             PTS_PAINT, PCT_AST_2PM, PCT_AST_3PM, OREB,
                             OREB_PCT, DREB, DREB_PCT, AST, AST_PCT, AST_RATIO, STL, BLK, TOV,
-                            PF, PLUSMINUS, USG_PCT, PACE)
-                        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            PF, PLUSMINUS, USG_PCT, PACE, POSS, TOTAL_ATTEMPTS, TOTAL_PTS, TOTAL_FTA, TOTAL_FTM,
+                            SHOT_ATTEMPTS, SHOT_PTS, SHOT_FTA, SHOT_FTM, SFOUL_ATTEMPTS, SFOUL_PTS, SFOUL_FTA,
+                            SFOUL_FTM, PFOUL_ATTEMPTS, PFOUL_PTS, PFOUL_FTA, PFOUL_FTM, TFOUL_PTS)
+                        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                               ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """
         self.excecute(sql_boxscore, boxscore)
 

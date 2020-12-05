@@ -18,7 +18,7 @@ class FeatureCreation(object):
         df = df.set_index(order_idx_name).sort_index()
         return df, original_idx_name
 
-    def merge_stat_to_df(self, stat_df, df, group_col_names, col_name, new_col_name, n_shift, order_idx_name='DATE'):
+    def merge_stat_to_df(self, stat_df, df, group_col_names, col_name, new_col_name, n_shift, order_idx_name):
         index_name = df.index.name
 
         stat_df = stat_df.groupby(by=group_col_names).shift(n_shift)
@@ -40,7 +40,7 @@ class FeatureCreation(object):
 
         df = self.merge_stat_to_df(
             stat_df=temp, df=df, group_col_names=group_col_names, col_name=col_name, new_col_name=new_col_name,
-            n_shift=n_shift
+            n_shift=n_shift, order_idx_name=order_idx_name
             )
 
         if original_idx_name is None:
@@ -52,7 +52,11 @@ class FeatureCreation(object):
         df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)
 
         df['weighted_col'] = df[col_name] * df[weight_col_name]
-        temp = df.groupby(group_col_names)
+        temp = df.copy()
+        temp.loc[
+            (temp['weighted_col'].isnull()) | (temp[weight_col_name].isnull()), ['weighted_col', weight_col_name]
+            ] = 0
+        temp = temp.groupby(group_col_names)
         temp = temp['weighted_col'].expanding(min_periods=min_periods).sum() / \
             temp[weight_col_name].expanding(min_periods=min_periods).sum()
         temp = temp.rename(col_name)
@@ -60,7 +64,7 @@ class FeatureCreation(object):
 
         df = self.merge_stat_to_df(
             stat_df=temp, df=df, group_col_names=group_col_names, col_name=col_name, new_col_name=new_col_name,
-            n_shift=n_shift
+            n_shift=n_shift, order_idx_name=order_idx_name
             )
 
         if original_idx_name is None:
@@ -78,7 +82,7 @@ class FeatureCreation(object):
 
         df = self.merge_stat_to_df(
             stat_df=temp, df=df, group_col_names=group_col_names, col_name=col_name, new_col_name=new_col_name,
-            n_shift=n_shift
+            n_shift=n_shift, order_idx_name=order_idx_name
             )
 
         if original_idx_name is None:
@@ -93,7 +97,7 @@ class FeatureCreation(object):
 
         df = self.merge_stat_to_df(
             stat_df=temp, df=df, group_col_names=group_col_names, col_name=col_name, new_col_name=new_col_name,
-            n_shift=n_shift
+            n_shift=n_shift, order_idx_name=order_idx_name
             )
 
         if original_idx_name is None:
@@ -110,7 +114,7 @@ class FeatureCreation(object):
 
         df = self.merge_stat_to_df(
             stat_df=temp, df=df, group_col_names=group_col_names, col_name=col_name, new_col_name=new_col_name,
-            n_shift=n_shift
+            n_shift=n_shift, order_idx_name=order_idx_name
             )
 
         if original_idx_name is None:
@@ -123,8 +127,13 @@ class FeatureCreation(object):
         df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)
 
         min_periods = max(min_periods, n_rolling)
+
         df['weighted_col'] = df[col_name] * df[weight_col_name]
-        temp = df.groupby(group_col_names)
+        temp = df.copy()
+        temp.loc[
+            (temp['weighted_col'].isnull()) | (temp[weight_col_name].isnull()), ['weighted_col', weight_col_name]
+            ] = 0
+        temp = temp.groupby(group_col_names)
         temp = temp['weighted_col'].rolling(window=n_rolling, min_periods=min_periods).sum() / \
             temp[weight_col_name].rolling(n_rolling, min_periods=min_periods).sum()
         temp = temp.rename(col_name)
@@ -132,7 +141,7 @@ class FeatureCreation(object):
 
         df = self.merge_stat_to_df(
             stat_df=temp, df=df, group_col_names=group_col_names, col_name=col_name, new_col_name=new_col_name,
-            n_shift=n_shift
+            n_shift=n_shift, order_idx_name=order_idx_name
             )
 
         if original_idx_name is None:
@@ -146,7 +155,7 @@ class FeatureCreation(object):
 
         df = self.merge_stat_to_df(
             stat_df=temp, df=df, group_col_names=group_col_names, col_name=col_name, new_col_name=new_col_name,
-            n_shift=n_shift
+            n_shift=n_shift, order_idx_name=order_idx_name
             )
 
         if original_idx_name is None:
@@ -161,7 +170,7 @@ class FeatureCreation(object):
 
         df = self.merge_stat_to_df(
             stat_df=temp, df=df, group_col_names=group_col_names, col_name=col_name, new_col_name=new_col_name,
-            n_shift=n_shift
+            n_shift=n_shift, order_idx_name=order_idx_name
             )
 
         if original_idx_name is None:
