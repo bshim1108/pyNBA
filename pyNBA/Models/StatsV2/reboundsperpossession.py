@@ -97,7 +97,6 @@ class ReboundsPerPossession(object):
             2*team_boxscores['AVG_OREB_CHANCES/POSSESSION_OPP_TEAM_ALLOWED'] - \
                 team_boxscores['AVG_OREB_CHANCES/POSSESSION(SEASON)_OPP_TEAM_P.A.']
 
-        # average player oreb/chance
         boxscores = boxscores.merge(team_boxscores, on=['SEASON', 'DATE', 'TEAM', 'OPP_TEAM'], how='left')
 
         boxscores['OREB_CHANCES'] = np.nan
@@ -106,6 +105,27 @@ class ReboundsPerPossession(object):
             ).apply(lambda x: round(x))
         boxscores.loc[boxscores['OREB'] == 0, 'OREB_CHANCES'] = \
             boxscores.loc[boxscores['OREB'] == 0, 'TEAM_OREB_CHANCES/POSSESSION']*boxscores.loc[boxscores['OREB'] == 0, 'POSS']
+
+        boxscores['TEAM_DREB_CHANCES'] = boxscores['OPP_TEAM_OREB_CHANCES']
+        boxscores['TEAM_DREB_CHANCES/POSSESSION'] = boxscores['TEAM_DREB_CHANCES']/boxscores['TEAM_POSSESSIONS']
+
+        boxscores['DREB_CHANCES'] = np.nan
+        boxscores.loc[boxscores['DREB'] > 0, 'DREB_CHANCES'] = (
+            boxscores.loc[boxscores['DREB'] > 0, 'DREB'] / boxscores.loc[boxscores['DREB'] > 0, 'DREB_PCT']
+            ).apply(lambda x: round(x))
+        boxscores.loc[boxscores['DREB'] == 0, 'DREB_CHANCES'] = \
+            boxscores.loc[boxscores['DREB'] == 0, 'TEAM_DREB_CHANCES/POSSESSION']*boxscores.loc[boxscores['DREB'] == 0, 'POSS']
+
+        temp = boxscores.groupby(['SEASON', 'DATE', 'TEAM', 'OPP_TEAM']).apply(
+            lambda x: pd.Series({
+                'IMPLIED_TEAM_OREB_CHANCES': x['OREB_CHANCES'].sum()/5,
+                'IMPLIED_TEAM_DREB_CHANCES': x['DREB_CHANCES'].sum()/5
+            })
+        ).reset_index()
+        boxscores = boxscores.merge(temp, on=['SEASON', 'DATE', 'TEAM', 'OPP_TEAM'], how='left')
+
+        # average player oreb/chance
+        boxscores['OREB_CHANCES'] = boxscores['OREB_CHANCES']*(boxscores['TEAM_OREB_CHANCES']/boxscores['IMPLIED_TEAM_OREB_CHANCES']) 
         boxscores['OREB/OREB_CHANCE'] = boxscores['OREB']/boxscores['OREB_CHANCES']
 
         boxscores = feature_creation.expanding_weighted_mean(
@@ -114,14 +134,7 @@ class ReboundsPerPossession(object):
         )
 
         # average player dreb/chance
-        boxscores['TEAM_DREB_CHANCES/POSSESSION'] = boxscores['OPP_TEAM_OREB_CHANCES/POSSESSION']
-
-        boxscores['DREB_CHANCES'] = np.nan
-        boxscores.loc[boxscores['DREB'] > 0, 'DREB_CHANCES'] = (
-            boxscores.loc[boxscores['DREB'] > 0, 'DREB'] / boxscores.loc[boxscores['DREB'] > 0, 'DREB_PCT']
-            ).apply(lambda x: round(x))
-        boxscores.loc[boxscores['DREB'] == 0, 'DREB_CHANCES'] = \
-            boxscores.loc[boxscores['OREB'] == 0, 'TEAM_DREB_CHANCES/POSSESSION']*boxscores.loc[boxscores['DREB'] == 0, 'POSS']
+        boxscores['DREB_CHANCES'] = boxscores['DREB_CHANCES']*(boxscores['TEAM_DREB_CHANCES']/boxscores['IMPLIED_TEAM_DREB_CHANCES']) 
         boxscores['DREB/DREB_CHANCE'] = boxscores['DREB']/boxscores['DREB_CHANCES']
 
         boxscores = feature_creation.expanding_weighted_mean(

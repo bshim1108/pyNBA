@@ -1,5 +1,9 @@
+import time
 import pandas as pd
-from nba_api.stats.endpoints import PlayByPlayV2
+from os import path
+from datetime import datetime
+from nba_api.stats.endpoints import PlayByPlayV2, SynergyPlayTypes
+from pyNBA.Data.constants import CURRENT_SEASON, LINEUP_TEAM_TO_NBA_TEAM, LINEUP_NAME_TO_NBA_NAME
 
 class Helpers(object):
     def __init__(self):
@@ -169,3 +173,80 @@ class Helpers(object):
 
         attempts_boxscores['GAME_ID'] = game_id
         return attempts_boxscores
+
+    def get_play_type_breakdown(self, play_type, season, player_or_team):
+        if player_or_team == 'player':
+            player_or_team_abbreviation = 'P'
+            type_grouping_nullable = 'Offensive'
+        elif player_or_team == 'team':
+            player_or_team_abbreviation = 'T'
+            type_grouping_nullable = 'Defensive'
+        else:
+            raise Exception('player_or_team parameter must be one of the following: player, team')
+
+        if season != CURRENT_SEASON:
+            file_name = "/Users/brandonshimiaie/Projects/pyNBA/pyNBA/Data/playtypedata/{}/{}_{}_Final.pkl".format(
+                player_or_team, play_type, season
+                )
+        else:
+            current_date_string = datetime.now().strftime("%Y-%m-%d")
+            file_name = "/Users/brandonshimiaie/Projects/pyNBA/pyNBA/Data/playtypedata/{}/{}_{}_{}.pkl".format(
+                player_or_team, play_type, season, current_date_string
+                )
+
+        if not path.exists(file_name):
+            play_type_breakdown = SynergyPlayTypes(
+                season=season, play_type_nullable=play_type, season_type_all_star='Regular Season',
+                player_or_team_abbreviation=player_or_team_abbreviation, type_grouping_nullable=type_grouping_nullable
+                ).get_data_frames()[0]
+            time.sleep(2.000)
+            play_type_breakdown.to_pickle(file_name)
+
+        return pd.read_pickle(file_name)
+
+    def prepare_team(self, team):
+        if team in LINEUP_TEAM_TO_NBA_TEAM:
+            return LINEUP_TEAM_TO_NBA_TEAM[team]
+        return team
+
+    def prepare_name(self, name, team):
+        if name in LINEUP_NAME_TO_NBA_NAME:
+            if isinstance(LINEUP_NAME_TO_NBA_NAME[name], dict):
+                return LINEUP_NAME_TO_NBA_NAME[name][team]
+            return LINEUP_NAME_TO_NBA_NAME[name]
+        return name
+
+    def get_player_data(self, lineup):
+        player_data = pd.DataFrame(columns=[
+            'NAME', 'START', 'PLAYERSTATUS'
+        ])
+
+        players_added = {}
+        lineup_status = ''
+        start = 1
+
+        rows = lineup.find_all('li')
+        for row in rows:
+            row_class = row['class']
+            if row_class[0] == 'lineup__status':
+                lineup_status_data = row_class[1]
+                if lineup_status_data == 'is-expected':
+                    lineup_status = 'Expected'
+                elif lineup_status_data == 'is-confirmed':
+                    lineup_status = 'Confirmed'
+            elif row_class[0] == 'lineup__title':
+                start = 0
+            elif row_class[0] == 'lineup__player':
+                player_position = row.find('div', class_='lineup__pos').text
+                player_name = row.find('a').text
+                status_data = row.find('span', class_='lineup__inj')
+                player_status = 'Healthy' if status_data is None else status_data.text
+                if player_position != 'BE' and player_name not in players_added:
+                    temp = pd.Series(
+                        [player_name, start, player_status],
+                        index=['NAME', 'START', 'PLAYERSTATUS']
+                        )
+                    player_data = player_data.append(temp, ignore_index=True)
+                    players_added[player_name] = 1
+                    
+        return player_data, lineup_status

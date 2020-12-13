@@ -13,15 +13,16 @@ from pyNBA.Models.StatsV2.assistsperpossession import AssistsPerPossession
 from pyNBA.Models.StatsV2.reboundsperpossession import ReboundsPerPossession
 from pyNBA.Models.StatsV2.turnoversperpossession import TurnoversPerPossession
 
-class Excel(object):
+class PlayerProps(object):
     def __init__(self):
-        self.current_date = datetime.now()
+        self.current_date_string = datetime.now().strftime("%Y-%m-%d")
+        self.query_data = QueryData(update=True)
+        self.gc = gspread.service_account()
 
     def get_historical_boxscores(self, start_date=None, end_date=None):
-        query_data = QueryData(update=True)
         clean_data = CleanData()
 
-        boxscores = query_data.query_boxscore_data()
+        boxscores = self.query_data.query_boxscore_data()
         boxscores = clean_data.select_regular_season_games(boxscores)
         boxscores = clean_data.drop_rows_player_injured(boxscores)
         boxscores = clean_data.drop_rows_player_rest(boxscores)
@@ -33,21 +34,20 @@ class Excel(object):
 
         return boxscores
 
-    #TODO
     def get_current_players(self):
-        current_date_string = self.current_date.strftime("%Y-%m-%d")
+        sh = self.gc.open('Current Lineups')
+        worksheet = sh.worksheet("Data")
+        current_lineups = pd.DataFrame(worksheet.get_all_records())
+    
+        current_lineups = current_lineups.loc[
+            ~current_lineups['PLAYERSTATUS'].isin(['GTD', 'INACT'])
+        ]
 
-        boxscores = self.get_historical_boxscores()
-        current_row_cols = ['PLAYERID', 'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START']
+        current_lineups = current_lineups[['PLAYERID', 'SEASON', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START']]
+        current_lineups['DATE'] = self.current_date_string
+        current_lineups['GAMEID'] = str(1e24)
 
-        last_boxscores = boxscores.loc[boxscores['DATE'] == '2020-03-11']
-        last_boxscores['DATE'] = current_date_string
-        for col in last_boxscores.columns:
-            if col not in current_row_cols:
-                last_boxscores[col] = np.nan
-        last_boxscores['GAMEID'] = str(1e24)
-
-        return last_boxscores
+        return current_lineups
 
     def generate_data(self, train_start_date=None, train_end_date=None):
         print('retrieving historical boxscores...')
@@ -57,25 +57,23 @@ class Excel(object):
         current_players = self.get_current_players()
         data = historical_boxscores.append(current_players)
 
-        current_date_string = self.current_date.strftime("%Y-%m-%d")
-
         print('generating minutes data...')
-        mp_out = MinutesPlayed().predict(data, current_date_string, current_date_string)
+        mp_out = MinutesPlayed().predict(data, self.current_date_string, self.current_date_string)
 
         print('generating possessions/minute data...')
-        ppm_out = PossessionsPerMinute().predict(data, current_date_string, current_date_string)
+        ppm_out = PossessionsPerMinute().predict(data, self.current_date_string, self.current_date_string)
 
         print('generating points/possession data...')
-        ppp_out = PointsPerPossession().predict(data, current_date_string, current_date_string)
+        ppp_out = PointsPerPossession().predict(data, self.current_date_string, self.current_date_string)
 
         print('generating rebounds/possession data...')
-        rpp_out = ReboundsPerPossession().predict(data, current_date_string, current_date_string)
+        rpp_out = ReboundsPerPossession().predict(data, self.current_date_string, self.current_date_string)
 
         print('generating assists/possession data...')
-        app_out = AssistsPerPossession().predict(data, current_date_string, current_date_string)
+        app_out = AssistsPerPossession().predict(data, self.current_date_string, self.current_date_string)
 
         print('generating turnovers/possession data...')
-        tpp_out = TurnoversPerPossession().predict(data, current_date_string, current_date_string)
+        tpp_out = TurnoversPerPossession().predict(data, self.current_date_string, self.current_date_string)
 
         predicted_boxscores = reduce(
             lambda left, right: pd.merge(
@@ -84,17 +82,17 @@ class Excel(object):
                 )
         return predicted_boxscores
 
-    def write_data(self, train_start_date=None, train_end_date=None):
+    def write_stat_data(self, train_start_date=None, train_end_date=None):
         predicted_boxscores = self.generate_data(train_start_date, train_end_date)
-        predicted_boxscores = predicted_boxscores.sort_values(by=['TEAM', 'START', 'MA3_MP(REG)_R'], ascending=False)
+        predicted_boxscores = predicted_boxscores.sort_values(by=['TEAM', 'START', 'AVG_MP(REG)_R'], ascending=False)
 
-        print('writing data to excel...')
-        gc = gspread.service_account()
-        sh = gc.open('Predicted Stats')
-        worksheet = sh.get_worksheet(0)
+        print('writing player stat data to excel...')
+        sh = self.gc.open('Predicted Stats')
+        sh.values_clear("RawData!A1:Z999")
+        worksheet = sh.worksheet("RawData")
         worksheet.update([predicted_boxscores.columns.values.tolist()] + predicted_boxscores.values.tolist())
         sh.share('brandonshimiaie@gmail.com', perm_type='user', role='writer')
 
 if __name__ == "__main__": 
-    Excel().write_data()
+    PlayerProps().write_stat_data()
   

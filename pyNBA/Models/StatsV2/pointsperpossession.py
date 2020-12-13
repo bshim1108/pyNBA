@@ -4,10 +4,12 @@ import time
 from nba_api.stats.endpoints import SynergyPlayTypes
 from pyNBA.Models.constants import PLAY_TYPES
 from pyNBA.Models.features import FeatureCreation
+from pyNBA.Data.helpers import Helpers
 
 class PointsPerPossession(object):
     def generate_regressors(self, boxscores, start_date, end_date):
         feature_creation = FeatureCreation()
+        helpers = Helpers()
 
         relevant_seasons = boxscores.loc[
                     (boxscores['DATE'] >= start_date) & 
@@ -34,47 +36,38 @@ class PointsPerPossession(object):
 
         # adjustment for defense (points per attempt)
         for play_type in PLAY_TYPES:
-            player_pbp_data = pd.DataFrame()
-            team_pbp_data = pd.DataFrame()
+            player_play_type_data = pd.DataFrame()
+            team_play_type_data = pd.DataFrame()
             for season in relevant_seasons:
-                play_type_breakdown = SynergyPlayTypes(
-                    season=season, play_type_nullable=play_type, season_type_all_star='Regular Season',
-                    player_or_team_abbreviation='P', type_grouping_nullable='Offensive'
-                    ).get_data_frames()[0]
-                time.sleep(2.000)
+                player_data = helpers.get_play_type_breakdown(play_type, season, 'player')
 
-                play_type_breakdown['SEASON'] = season
-                play_type_breakdown['PLAYER_ID'] = play_type_breakdown['PLAYER_ID'].apply(lambda x: str(x))
-                play_type_breakdown = play_type_breakdown.rename(
-                    columns={'TEAM_ABBREVIATION': 'TEAM', 'PLAYER_ID': 'PLAYERID',
-                             'PPP': '{}_PPP'.format(play_type), 'POSS_PCT': '{}_POSS_PCT'.format(play_type)}
-                             )
-                play_type_breakdown = play_type_breakdown[
+                player_data['SEASON'] = season
+                player_data['PLAYER_ID'] = player_data['PLAYER_ID'].apply(lambda x: str(x))
+                player_data = player_data.rename(columns={
+                    'TEAM_ABBREVIATION': 'TEAM', 'PLAYER_ID': 'PLAYERID',
+                    'PPP': '{}_PPP'.format(play_type), 'POSS_PCT': '{}_POSS_PCT'.format(play_type)
+                    })
+                player_data = player_data[
                     ['SEASON', 'PLAYERID', 'TEAM', '{}_PPP'.format(play_type), '{}_POSS_PCT'.format(play_type)]
                     ]
 
-                player_pbp_data = player_pbp_data.append(play_type_breakdown)
+                player_play_type_data = player_play_type_data.append(player_data)
                 
-                play_type_breakdown = SynergyPlayTypes(
-                    season=season, play_type_nullable=play_type, season_type_all_star='Regular Season',
-                    player_or_team_abbreviation='T', type_grouping_nullable='Defensive'
-                    ).get_data_frames()[0]
-                time.sleep(2.000)
+                team_data = helpers.get_play_type_breakdown(play_type, season, 'team')
 
-                play_type_breakdown['SEASON'] = season
-                play_type_breakdown = play_type_breakdown.rename(
-                    columns={'TEAM_ABBREVIATION': 'OPP_TEAM', 'PPP': '{}_PPP_ALLOWED'.format(play_type),
-                    'POSS_PCT': '{}_POSS_PCT_ALLOWED'.format(play_type)}
-                    )
-                play_type_breakdown = play_type_breakdown[
+                team_data['SEASON'] = season
+                team_data = team_data.rename(columns={
+                    'TEAM_ABBREVIATION': 'OPP_TEAM', 'PPP': '{}_PPP_ALLOWED'.format(play_type),
+                    'POSS_PCT': '{}_POSS_PCT_ALLOWED'.format(play_type)
+                    })
+                team_data = team_data[
                     ['SEASON', 'OPP_TEAM', '{}_PPP_ALLOWED'.format(play_type), '{}_POSS_PCT_ALLOWED'.format(play_type)]
                     ]
                 
-                team_pbp_data = team_pbp_data.append(play_type_breakdown)
+                team_play_type_data = team_play_type_data.append(team_data)
                 
-                
-            boxscores = boxscores.merge(player_pbp_data, on=['SEASON', 'PLAYERID', 'TEAM'], how='left')
-            boxscores = boxscores.merge(team_pbp_data, on=['SEASON', 'OPP_TEAM'], how='left')
+            boxscores = boxscores.merge(player_play_type_data, on=['SEASON', 'PLAYERID', 'TEAM'], how='left')
+            boxscores = boxscores.merge(team_play_type_data, on=['SEASON', 'OPP_TEAM'], how='left')
 
         poss_pct_cols = ['{}_POSS_PCT'.format(i) for i in PLAY_TYPES]
         poss_pct_allowed_cols = ['{}_POSS_PCT_ALLOWED'.format(i) for i in PLAY_TYPES]
@@ -101,18 +94,21 @@ class PointsPerPossession(object):
 
             boxscores['PPP_ADJ'] = boxscores.apply(
                 lambda row: row['{}_PPP_ALLOWED'.format(play_type)]/row['AVG_{}_PPP_ALLOWED_PLAYED_AGAINST'.format(play_type)] \
-                    if (not np.isnan(row['{}_PPP_ALLOWED'.format(play_type)]) and not np.isnan(row['AVG_{}_PPP_ALLOWED_PLAYED_AGAINST'.format(play_type)]))\
+                    if (not np.isnan(row['{}_PPP_ALLOWED'.format(play_type)]) and \
+                        not np.isnan(row['AVG_{}_PPP_ALLOWED_PLAYED_AGAINST'.format(play_type)])) \
                         else 1,
                 axis = 1
                 )
             boxscores['POSS_PCT_ADJ'] = boxscores.apply(
                 lambda row: row['{}_POSS_PCT_ALLOWED'.format(play_type)]/row['AVG_{}_POSS_PCT_ALLOWED_PLAYED_AGAINST'.format(play_type)] \
-                    if (not np.isnan(row['{}_POSS_PCT_ALLOWED'.format(play_type)]) and not np.isnan(row['AVG_{}_POSS_PCT_ALLOWED_PLAYED_AGAINST'.format(play_type)]))\
+                    if (not np.isnan(row['{}_POSS_PCT_ALLOWED'.format(play_type)]) and \
+                        not np.isnan(row['AVG_{}_POSS_PCT_ALLOWED_PLAYED_AGAINST'.format(play_type)])) \
                         else 1,
                 axis = 1
                 )
 
-            boxscores['NET_POINTS/ATTEMPT'] += boxscores['{}_PPP'.format(play_type)].fillna(0) * boxscores['{}_POSS_PCT'.format(play_type)].fillna(0)
+            boxscores['NET_POINTS/ATTEMPT'] += \
+                boxscores['{}_PPP'.format(play_type)].fillna(0) * boxscores['{}_POSS_PCT'.format(play_type)].fillna(0)
             boxscores['TOTAL_POSS_PCT'] += boxscores['{}_POSS_PCT'.format(play_type)].fillna(0)
 
             boxscores['IMPLIED_NET_POINTS/ATTEMPT'] += (boxscores['{}_PPP'.format(play_type)].fillna(0) * boxscores['PPP_ADJ']) * \

@@ -1,4 +1,7 @@
-SEASONS = ['2014-15', '2015-16', '2016-17', '2017-18', '2018-19', '2019-20']
+CURRENT_SEASON = '2020-21'
+
+SEASONS = ['2014-15', '2015-16', '2016-17', '2017-18', '2018-19', '2019-20', '2020-21']
+
 SEASON_TO_REGULAR_SEASON_DATES = {
     '2014-15': {
         'START': '2014-11-28',
@@ -23,6 +26,10 @@ SEASON_TO_REGULAR_SEASON_DATES = {
     '2019-20': {
         'START': '2019-11-22',
         'END': '2020-04-15'
+    },
+    '2020-21': {
+        'START': '2020-12-11',
+        'END': '2099-12-31'
     }
 }
 
@@ -232,4 +239,107 @@ OWNERSHIP_NAME_TO_NBA_NAME = {
     'Wendell Carter': 'Wendell Carter Jr.',
     'Wesley Iwundu': 'Wes Iwundu',
     'Zach Norvell': 'Zach Norvell Jr.'
+}
+
+LINEUP_NAME_TO_NBA_NAME = {
+    'M. Fultz': 'Markelle Fultz',
+    'N. Vucevic': 'Nikola Vucevic',
+    'A. Aminu': 'Al-Farouq Aminu',
+    'J. Isaac': 'Jonathan Isaac',
+    'James Ennis': 'James Ennis III',
+    'B. Bogdanovic': {
+        'ATL': 'Bogdan Bogdanovic',
+        'UTA': 'Bojan Bogdanovic'
+        },
+    'D. Hunter': "De'Andre Hunter",
+    'O. Okongwu': 'Onyeka Okongwu',
+    'M. Robinson': 'Mitchell Robinson',
+    'S. Mykhailiuk': 'Svi Mykhailiuk',
+    'D. Sirvydis': 'Deividas Sirvydis',
+    'Danuel House': 'Danuel House Jr.',
+    'D. Cousins': 'DeMarcus Cousins',
+    'S. Brown': 'Sterling Brown',
+    'Otto Porter': 'Otto Porter Jr.',
+    'L. Markkanen': 'Lauri Markkanen',
+    'W. Carter': 'Wendell Carter Jr.',
+    'G. Temple': 'Garrett Temple',
+    'D. Valentine': 'Denzel Valentine',
+    'T. Young': 'Thaddeus Young',
+    'P. Beverley': 'Patrick Beverley',
+    'Marcus Morris': 'Marcus Morris Sr.',
+    'D. Schroder': 'Dennis Schroder',
+    'W. Matthews': 'Wesley Matthews',
+    'K. Caldwell-Pope': 'Kentavious Caldwell-Pope',
+    'M. Morris': 'Markieff Morris',
+    'A. McKinnie': 'Alfonzo McKinnie',
+    'H. Barnes': 'Harrison Barnes',
+    'N. Bjelica': 'Nemanja Bjelica',
+    'R. Holmes': 'Richaun Holmes',
+    'Marvin Bagley': 'Marvin Bagley III',
+    'H. Whiteside': 'Hassan Whiteside',
+    'D. Lillard': 'Damian Lillard',
+    'Derrick Jones': 'Derrick Jones Jr.',
+    'R. Covington': 'Robert Covington',
+    'M. Kidd-Gilchrist': 'Michael Kidd-Gilchrist',
+    'C. Wood': 'Christian Wood',
+    'M. Brogdon': 'Malcolm Brogdon',
+    'V. Oladipo': 'Victor Oladipo',
+    'J. Holiday': 'Justin Holiday',
+    'D. Sabonis': 'Domantas Sabonis',
+    'Brian Bowen': 'Brian Bowen II',
+    'D. Garland': 'Darius Garland',
+    'A. Drummond': 'Andre Drummond',
+    'Kevin Porter': 'Kevin Porter Jr.',
+    'S. Gilgeous-Alexander': 'Shai Gilgeous-Alexander',
+    'H. Diallo': 'Hamidou Diallo',
+    'A. Schofield': 'Admiral Schofield',
+    'A. Pokusevski': 'Aleksej Pokusevski',
+    'J. Jackson': 'Justin Jackson',
+    'D. Murray': 'Dejounte Murray',
+    'L. Aldridge': 'LaMarcus Aldridge',
+    'K. Johnson': 'Keldon Johnson',
+    'Q. Weatherspoon': 'Quinndary Weatherspoon',
+    'Lonnie Walker': 'Lonnie Walker IV',
+    'D. Graham': "Devonte' Graham",
+    'G. Hayward': 'Gordon Hayward',
+    'PJ Washington': 'P.J. Washington',
+    'Tim Hardaway': 'Tim Hardaway Jr.',
+    'J. Richardson': 'Josh Richardson',
+    'K. Porzingis': 'Kristaps Porzingis',
+    'D. DiVincenzo': 'Donte DiVincenzo',
+    'K. Middleton': 'Khris Middleton',
+    'G. Antetokounmpo': 'Giannis Antetokounmpo',
+    'B. Clarke': 'Brandon Clarke',
+    'J. Valanciunas': 'Jonas Valanciunas',
+    'Jaren Jackson': 'Jaren Jackson Jr.',
+    'K. Tillie': 'Killian Tillie',
+    'J. Winslow': 'Justise Winslow',
+    'D. Melton': "De'Anthony Melton",
+    'D. Russell': "D'Angelo Russell",
+    'A. Edwards': 'Anthony Edwards',
+    'J. Hernangomez': 'Juancho Hernangomez',
+    'K. Towns': 'Karl-Anthony Towns',
+    'M. Porter': 'Michael Porter Jr.',
+    'A. Wiggins': 'Andrew Wiggins',
+    'Kelly Oubre': 'Kelly Oubre Jr.',
+    'D. Green': 'Draymond Green',
+    'D. Mitchell': 'Donovan Mitchell',
+    'S. Harrison': 'Shaquille Harrison',
+    'M. Dellavedova': 'Matthew Dellavedova',
+    'G. Whittington': 'Greg Whittington',
+    'C. Johnson': 'Cameron Johnson',
+    'Troy Brown': 'Troy Brown Jr.',
+    'J. Robinson': 'Jerome Robinson',
+    'R. Westbrook': 'Russell Westbrook',
+    'S. Dinwiddie': 'Spencer Dinwiddie',
+    'D. Jordan': 'DeAndre Jordan',
+    'N. Claxton': 'Nicolas Claxton',
+    'M. Harrell': 'Montrezl Harrell'
+}
+
+LINEUP_TEAM_TO_NBA_TEAM = {
+    'NY': 'NYK',
+    'SA': 'SAS',
+    'GS': 'GSW',
+    'PHO': 'PHX'
 }
