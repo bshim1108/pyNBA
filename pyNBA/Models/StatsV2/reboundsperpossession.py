@@ -30,13 +30,11 @@ class ReboundsPerPossession(object):
         team_boxscores = team_boxscores.merge(opp_team_boxscores, on=['SEASON', 'DATE', 'OPP_TEAM'], how='left')
 
         team_boxscores['TEAM_OREB_CHANCES'] = team_boxscores['TEAM_OREB'] + team_boxscores['OPP_TEAM_DREB']
-        team_boxscores['TEAM_OREB_CHANCES/POSSESSION'] = team_boxscores['TEAM_OREB_CHANCES']/team_boxscores['TEAM_POSSESSIONS']
-
-        team_boxscores['OPP_TEAM_OREB_CHANCES'] = team_boxscores['TEAM_DREB'] + team_boxscores['OPP_TEAM_OREB']
-        team_boxscores['OPP_TEAM_OREB_CHANCES/POSSESSION'] = \
-            team_boxscores['OPP_TEAM_OREB_CHANCES']/team_boxscores['OPP_TEAM_POSSESSIONS']
+        team_boxscores['TEAM_DREB_CHANCES'] = team_boxscores['TEAM_DREB'] + team_boxscores['OPP_TEAM_OREB']
 
         # average team oreb chances/possession
+        team_boxscores['TEAM_OREB_CHANCES/POSSESSION'] = team_boxscores['TEAM_OREB_CHANCES']/team_boxscores['TEAM_POSSESSIONS']
+
         team_boxscores = feature_creation.expanding_weighted_mean(
             df=team_boxscores, group_col_names=['SEASON', 'TEAM'], col_name='TEAM_OREB_CHANCES/POSSESSION',
             new_col_name='AVG_TEAM_OREB_CHANCES/POSSESSION', weight_col_name='TEAM_POSSESSIONS'
@@ -51,30 +49,35 @@ class ReboundsPerPossession(object):
         # average oreb chances/possession allowed that team played against
         season_stats = team_boxscores.groupby(['SEASON', 'TEAM']).apply(
             lambda x: pd.Series({
+                'TEAM_OREB_ALLOWED(SEASON)': x['OPP_TEAM_OREB'].mean(),
                 'TEAM_OREB_CHANCES(SEASON)': x['TEAM_OREB_CHANCES'].mean(),
+                'TEAM_OREB_CHANCES_ALLOWED(SEASON)': x['TEAM_DREB_CHANCES'].mean(),
+                'TEAM_DREB_ALLOWED(SEASON)': x['OPP_TEAM_DREB'].mean(),
+                'TEAM_DREB_CHANCES(SEASON)': x['TEAM_DREB_CHANCES'].mean(),
+                'TEAM_DREB_CHANCES_ALLOWED(SEASON)': x['TEAM_DREB_CHANCES'].mean(),
                 'TEAM_POSSESSIONS(SEASON)': x['TEAM_POSSESSIONS'].mean(),
-                'TEAM_OREB_CHANCES_ALLOWED(SEASON)': x['OPP_TEAM_OREB_CHANCES'].mean(),
-                'TEAM_POSSESSIONS_ALLOWED(SEASON)': x['OPP_TEAM_POSSESSIONS'].mean(),
+                'TEAM_POSSESSIONS_ALLOWED(SEASON)': x['OPP_TEAM_POSSESSIONS'].mean()
             })
         ).reset_index()
 
-        season_stats['TEAM_OREB_CHANCES/POSSESSION(SEASON)'] = \
-            season_stats['TEAM_OREB_CHANCES(SEASON)']/season_stats['TEAM_POSSESSIONS(SEASON)']
-        season_stats['TEAM_OREB_CHANCES/POSSESSION_ALLOWED(SEASON)'] = \
-            season_stats['TEAM_OREB_CHANCES_ALLOWED(SEASON)']/season_stats['TEAM_POSSESSIONS_ALLOWED(SEASON)']
-
         opp_season_stats = season_stats.rename(columns={
-            'TEAM': 'OPP_TEAM', 'TEAM_OREB_CHANCES(SEASON)': 'OPP_TEAM_OREB_CHANCES(SEASON)',
-            'TEAM_POSSESSIONS(SEASON)': 'OPP_TEAM_POSSESSIONS(SEASON)',
+            'TEAM': 'OPP_TEAM',
+            'TEAM_OREB_ALLOWED(SEASON)': 'OPP_TEAM_OREB_ALLOWED(SEASON)',
+            'TEAM_OREB_CHANCES(SEASON)': 'OPP_TEAM_OREB_CHANCES(SEASON)',
             'TEAM_OREB_CHANCES_ALLOWED(SEASON)': 'OPP_TEAM_OREB_CHANCES_ALLOWED(SEASON)',
-            'TEAM_POSSESSIONS_ALLOWED(SEASON)': 'OPP_TEAM_POSSESSIONS_ALLOWED(SEASON)',
-            'TEAM_OREB_CHANCES/POSSESSION(SEASON)': 'OPP_TEAM_OREB_CHANCES/POSSESSION(SEASON)',
-            'TEAM_OREB_CHANCES/POSSESSION_ALLOWED(SEASON)': 'OPP_TEAM_OREB_CHANCES/POSSESSION_ALLOWED(SEASON)'
+            'TEAM_DREB_ALLOWED(SEASON)': 'OPP_TEAM_DREB_ALLOWED(SEASON)',
+            'TEAM_DREB_CHANCES(SEASON)': 'OPP_TEAM_DREB_CHANCES(SEASON)',
+            'TEAM_DREB_CHANCES_ALLOWED(SEASON)': 'OPP_TEAM_DREB_CHANCES_ALLOWED(SEASON)',
+            'TEAM_POSSESSIONS(SEASON)': 'OPP_TEAM_POSSESSIONS(SEASON)',
+            'TEAM_POSSESSIONS_ALLOWED(SEASON)': 'OPP_TEAM_POSSESSIONS_ALLOWED(SEASON)'
             })
 
 
         team_boxscores = team_boxscores.merge(season_stats, on=['SEASON', 'TEAM'], how='left')
         team_boxscores = team_boxscores.merge(opp_season_stats, on=['SEASON', 'OPP_TEAM'], how='left')
+
+        team_boxscores['OPP_TEAM_OREB_CHANCES/POSSESSION_ALLOWED(SEASON)'] = \
+            team_boxscores['OPP_TEAM_OREB_CHANCES_ALLOWED(SEASON)']/team_boxscores['OPP_TEAM_POSSESSIONS_ALLOWED(SEASON)']
 
         team_boxscores = feature_creation.expanding_weighted_mean(
             df=team_boxscores, group_col_names=['SEASON', 'TEAM'], col_name='OPP_TEAM_OREB_CHANCES/POSSESSION_ALLOWED(SEASON)',
@@ -82,6 +85,9 @@ class ReboundsPerPossession(object):
         )
 
         # average oreb chances/possession that opp team played against
+        team_boxscores['TEAM_OREB_CHANCES/POSSESSION(SEASON)'] = \
+            team_boxscores['TEAM_OREB_CHANCES(SEASON)']/team_boxscores['TEAM_POSSESSIONS(SEASON)']
+
         team_boxscores = feature_creation.expanding_weighted_mean(
             df=team_boxscores, group_col_names=['SEASON', 'OPP_TEAM'], col_name='TEAM_OREB_CHANCES/POSSESSION(SEASON)',
             new_col_name='AVG_OREB_CHANCES/POSSESSION(SEASON)_OPP_TEAM_P.A.', weight_col_name='OPP_TEAM_POSSESSIONS'
@@ -106,7 +112,6 @@ class ReboundsPerPossession(object):
         boxscores.loc[boxscores['OREB'] == 0, 'OREB_CHANCES'] = \
             boxscores.loc[boxscores['OREB'] == 0, 'TEAM_OREB_CHANCES/POSSESSION']*boxscores.loc[boxscores['OREB'] == 0, 'POSS']
 
-        boxscores['TEAM_DREB_CHANCES'] = boxscores['OPP_TEAM_OREB_CHANCES']
         boxscores['TEAM_DREB_CHANCES/POSSESSION'] = boxscores['TEAM_DREB_CHANCES']/boxscores['TEAM_POSSESSIONS']
 
         boxscores['DREB_CHANCES'] = np.nan
@@ -143,115 +148,79 @@ class ReboundsPerPossession(object):
         )
 
         # average oreb/oreb chance that opp team allowed
-        boxscores['NORMALIZED_POSITION'] = boxscores['POSITION'].apply(lambda x: x if '-' not in x else x.split('-')[0])
-
-        team_position_game_boxscores = boxscores.groupby(['SEASON', 'DATE', 'NORMALIZED_POSITION', 'TEAM', 'OPP_TEAM']).apply(
+        team_game_boxscores = boxscores.groupby(['SEASON', 'DATE', 'TEAM', 'OPP_TEAM']).apply(
             lambda x: pd.Series({
-                'TEAM_POSITION_OREB': x['OREB'].sum(),
-                'TEAM_POSITION_OREB_CHANCES': x['OREB_CHANCES'].sum(),
-                'TEAM_POSITION_DREB': x['DREB'].sum(),
-                'TEAM_POSITION_DREB_CHANCES': x['DREB_CHANCES'].sum()
+                'TEAM_OREB': x['OREB'].sum(),
+                'TEAM_OREB_CHANCES': x['OREB_CHANCES'].sum()/5,
+                'TEAM_DREB': x['DREB'].sum(),
+                'TEAM_DREB_CHANCES': x['DREB_CHANCES'].sum()/5
             })
         ).reset_index()
 
-        opp_team_position_game_boxscores = team_position_game_boxscores.drop(columns='OPP_TEAM')
-        opp_team_position_game_boxscores = opp_team_position_game_boxscores.rename(columns={
-            'TEAM': 'OPP_TEAM', 'TEAM_POSITION_OREB': 'OPP_TEAM_POSITION_OREB',
-            'TEAM_POSITION_OREB_CHANCES': 'OPP_TEAM_POSITION_OREB_CHANCES', 'TEAM_POSITION_DREB': 'OPP_TEAM_POSITION_DREB',
-            'TEAM_POSITION_DREB_CHANCES': 'OPP_TEAM_POSITION_DREB_CHANCES'
+        opp_team_game_boxscores = team_game_boxscores.drop(columns='OPP_TEAM')
+        opp_team_game_boxscores = opp_team_game_boxscores.rename(columns={
+            'TEAM': 'OPP_TEAM', 'TEAM_OREB': 'OPP_TEAM_OREB',
+            'TEAM_OREB_CHANCES': 'OPP_TEAM_OREB_CHANCES', 'TEAM_DREB': 'OPP_TEAM_DREB',
+            'TEAM_DREB_CHANCES': 'OPP_TEAM_DREB_CHANCES'
             })
-        team_position_game_boxscores = team_position_game_boxscores.merge(
-            opp_team_position_game_boxscores, on=['SEASON', 'DATE', 'NORMALIZED_POSITION', 'OPP_TEAM'], how='left'
+        team_game_boxscores = team_game_boxscores.merge(
+            opp_team_game_boxscores, on=['SEASON', 'DATE', 'OPP_TEAM'], how='left'
             )
 
-        team_position_game_boxscores['TEAM_POSITION_OREB/OREB_CHANCE'] = \
-            team_position_game_boxscores['TEAM_POSITION_OREB']/team_position_game_boxscores['TEAM_POSITION_OREB_CHANCES']
+        team_game_boxscores['TEAM_OREB/OREB_CHANCE'] = \
+            team_game_boxscores['TEAM_OREB']/team_game_boxscores['TEAM_OREB_CHANCES']
 
-        team_position_game_boxscores = feature_creation.expanding_weighted_mean(
-            df=team_position_game_boxscores, group_col_names=['SEASON', 'NORMALIZED_POSITION', 'OPP_TEAM'],
-            col_name='TEAM_POSITION_OREB/OREB_CHANCE', new_col_name='AVG_TEAM_POSITION_OREB/OREB_CHANCE_OPP_ALLOWED',
-            weight_col_name='TEAM_POSITION_OREB_CHANCES'
+        team_game_boxscores = feature_creation.expanding_weighted_mean(
+            df=team_game_boxscores, group_col_names=['SEASON', 'OPP_TEAM'],
+            col_name='TEAM_OREB/OREB_CHANCE', new_col_name='AVG_TEAM_OREB/OREB_CHANCE_OPP_ALLOWED',
+            weight_col_name='TEAM_OREB_CHANCES'
         )
 
         # average dreb/dreb chance that opp team allowed
-        team_position_game_boxscores['TEAM_POSITION_DREB/DREB_CHANCE'] = \
-            team_position_game_boxscores['TEAM_POSITION_DREB']/team_position_game_boxscores['TEAM_POSITION_DREB_CHANCES']
+        team_game_boxscores['TEAM_DREB/DREB_CHANCE'] = \
+            team_game_boxscores['TEAM_DREB']/team_game_boxscores['TEAM_DREB_CHANCES']
 
-        team_position_game_boxscores = feature_creation.expanding_weighted_mean(
-            df=team_position_game_boxscores, group_col_names=['SEASON', 'NORMALIZED_POSITION', 'OPP_TEAM'],
-            col_name='TEAM_POSITION_DREB/DREB_CHANCE', new_col_name='AVG_TEAM_POSITION_DREB/DREB_CHANCE_OPP_ALLOWED',
-            weight_col_name='TEAM_POSITION_DREB_CHANCES'
+        team_game_boxscores = feature_creation.expanding_weighted_mean(
+            df=team_game_boxscores, group_col_names=['SEASON', 'OPP_TEAM'],
+            col_name='TEAM_DREB/DREB_CHANCE', new_col_name='AVG_TEAM_DREB/DREB_CHANCE_OPP_ALLOWED',
+            weight_col_name='TEAM_DREB_CHANCES'
         )
 
         boxscores = boxscores.merge(
-            team_position_game_boxscores, on=['SEASON', 'DATE', 'NORMALIZED_POSITION', 'TEAM', 'OPP_TEAM'], how='left'
+            team_game_boxscores, on=['SEASON', 'DATE', 'TEAM', 'OPP_TEAM'], how='left'
         )
 
         # average oreb/oreb chance allowed that player played against
-        team_position_season_boxscores = team_position_game_boxscores.groupby(
-            ['SEASON', 'NORMALIZED_POSITION', 'TEAM']
-            ).apply(
-            lambda x: pd.Series({
-                'TEAM_POSITION_OREB(SEASON)': x['TEAM_POSITION_OREB'].mean(),
-                'TEAM_POSITION_OREB_CHANCES(SEASON)': x['TEAM_POSITION_OREB_CHANCES'].mean(),
-                'TEAM_POSITION_DREB(SEASON)': x['TEAM_POSITION_DREB'].mean(),
-                'TEAM_POSITION_DREB_CHANCES(SEASON)': x['TEAM_POSITION_DREB_CHANCES'].mean(),
-                'TEAM_POSITION_OREB_ALLOWED(SEASON)': x['OPP_TEAM_POSITION_OREB'].mean(),
-                'TEAM_POSITION_OREB_CHANCES_ALLOWED(SEASON)': x['OPP_TEAM_POSITION_OREB_CHANCES'].mean(),
-                'TEAM_POSITION_DREB_ALLOWED(SEASON)': x['OPP_TEAM_POSITION_DREB'].mean(),
-                'TEAM_POSITION_DREB_CHANCES_ALLOWED(SEASON)': x['OPP_TEAM_POSITION_DREB_CHANCES'].mean(),
-            })
-        ).reset_index()
-
-        opp_team_position_season_boxscores = team_position_season_boxscores.rename(columns={
-            'TEAM': 'OPP_TEAM',
-            'TEAM_POSITION_OREB(SEASON)': 'OPP_TEAM_POSITION_OREB(SEASON)',
-            'TEAM_POSITION_OREB_CHANCES(SEASON)': 'OPP_TEAM_POSITION_OREB_CHANCES(SEASON)',
-            'TEAM_POSITION_DREB(SEASON)': 'OPP_TEAM_POSITION_DREB(SEASON)',
-            'TEAM_POSITION_DREB_CHANCES(SEASON)': 'OPP_TEAM_POSITION_DREB_CHANCES(SEASON)',
-            'TEAM_POSITION_OREB_ALLOWED(SEASON)': 'OPP_TEAM_POSITION_OREB_ALLOWED(SEASON)',
-            'TEAM_POSITION_OREB_CHANCES_ALLOWED(SEASON)': 'OPP_TEAM_POSITION_OREB_CHANCES_ALLOWED(SEASON)',
-            'TEAM_POSITION_DREB_ALLOWED(SEASON)': 'OPP_TEAM_POSITION_DREB_ALLOWED(SEASON)',
-            'TEAM_POSITION_DREB_CHANCES_ALLOWED(SEASON)': 'OPP_TEAM_POSITION_DREB_CHANCES_ALLOWED(SEASON)',
-            })
-
-        boxscores = boxscores.merge(
-            team_position_season_boxscores, on=['SEASON', 'NORMALIZED_POSITION', 'TEAM'], how='left'
-        )
-        boxscores = boxscores.merge(
-            opp_team_position_season_boxscores, on=['SEASON', 'NORMALIZED_POSITION', 'OPP_TEAM'], how='left'
-        )
-
-        boxscores['OPP_TEAM_POSITION_OREB/OREB_CHANCE_ALLOWED(SEASON)'] = \
-            boxscores['OPP_TEAM_POSITION_OREB_ALLOWED(SEASON)'] / boxscores['OPP_TEAM_POSITION_OREB_CHANCES_ALLOWED(SEASON)']
+        boxscores['OPP_TEAM_OREB/OREB_CHANCE_ALLOWED(SEASON)'] = \
+            boxscores['OPP_TEAM_OREB_ALLOWED(SEASON)'] / boxscores['OPP_TEAM_OREB_CHANCES_ALLOWED(SEASON)']
 
         boxscores = feature_creation.expanding_weighted_mean(
-            df=boxscores, group_col_names=['SEASON', 'TEAM', 'NORMALIZED_POSITION', 'PLAYERID'],
-            col_name='OPP_TEAM_POSITION_OREB/OREB_CHANCE_ALLOWED(SEASON)',
-            new_col_name='AVG_TEAM_POSITION_OREB/OREB_CHANCE(SEASON)_ALLOWED_PLAYER_P.A',
+            df=boxscores, group_col_names=['SEASON', 'TEAM', 'PLAYERID'],
+            col_name='OPP_TEAM_OREB/OREB_CHANCE_ALLOWED(SEASON)',
+            new_col_name='AVG_TEAM_OREB/OREB_CHANCE(SEASON)_ALLOWED_PLAYER_P.A',
             weight_col_name='OREB_CHANCES'
         )
 
         # average dreb/dreb chance allowed that player played against
-        boxscores['OPP_TEAM_POSITION_DREB/DREB_CHANCE_ALLOWED(SEASON)'] = \
-            boxscores['OPP_TEAM_POSITION_DREB_ALLOWED(SEASON)'] / boxscores['OPP_TEAM_POSITION_DREB_CHANCES_ALLOWED(SEASON)']
+        boxscores['OPP_TEAM_DREB/DREB_CHANCE_ALLOWED(SEASON)'] = \
+            boxscores['OPP_TEAM_DREB_ALLOWED(SEASON)'] / boxscores['OPP_TEAM_DREB_CHANCES_ALLOWED(SEASON)']
 
         boxscores = feature_creation.expanding_weighted_mean(
-            df=boxscores, group_col_names=['SEASON', 'TEAM', 'NORMALIZED_POSITION', 'PLAYERID'],
-            col_name='OPP_TEAM_POSITION_DREB/DREB_CHANCE_ALLOWED(SEASON)',
-            new_col_name='AVG_TEAM_POSITION_DREB/DREB_CHANCE(SEASON)_ALLOWED_PLAYER_P.A',
+            df=boxscores, group_col_names=['SEASON', 'TEAM', 'PLAYERID'],
+            col_name='OPP_TEAM_DREB/DREB_CHANCE_ALLOWED(SEASON)',
+            new_col_name='AVG_TEAM_DREB/DREB_CHANCE(SEASON)_ALLOWED_PLAYER_P.A',
             weight_col_name='DREB_CHANCES'
         )
 
         # oreb/oreb chance defense
         boxscores['OREB/CH_DEF'] = \
-            boxscores['AVG_TEAM_POSITION_OREB/OREB_CHANCE_OPP_ALLOWED'] / \
-                boxscores['AVG_TEAM_POSITION_OREB/OREB_CHANCE(SEASON)_ALLOWED_PLAYER_P.A']
+            boxscores['AVG_TEAM_OREB/OREB_CHANCE_OPP_ALLOWED'] / \
+                boxscores['AVG_TEAM_OREB/OREB_CHANCE(SEASON)_ALLOWED_PLAYER_P.A']
 
         # dreb/dreb chance defense
         boxscores['DREB/CH_DEF'] = \
-            boxscores['AVG_TEAM_POSITION_DREB/DREB_CHANCE_OPP_ALLOWED'] / \
-                boxscores['AVG_TEAM_POSITION_DREB/DREB_CHANCE(SEASON)_ALLOWED_PLAYER_P.A']
+            boxscores['AVG_TEAM_DREB/DREB_CHANCE_OPP_ALLOWED'] / \
+                boxscores['AVG_TEAM_DREB/DREB_CHANCE(SEASON)_ALLOWED_PLAYER_P.A']
 
         boxscores = boxscores.loc[
             (boxscores['DATE'] >= start_date) & 

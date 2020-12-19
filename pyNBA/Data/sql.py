@@ -39,6 +39,7 @@ class SQL(object):
         sql_create_games_table = """CREATE TABLE IF NOT EXISTS GAMES (
                                     ID text PRIMARY KEY,
                                     SEASON text NOT NULL,
+                                    SEASONTYPE text NOT NULL,
                                     DATE text NOT NULL,
                                     HTM text NOT NULL,
                                     VTM text NOT NULL,
@@ -113,7 +114,10 @@ class SQL(object):
                                         PFOUL_PTS integer NOT NULL,
                                         PFOUL_FTA integer NOT NULL,
                                         PFOUL_FTM integer NOT NULL,
+                                        TFOUL_ATTEMPTS integer NOT NULL,
                                         TFOUL_PTS integer NOT NULL,
+                                        TFOUL_FTA integer NOT NULL,
+                                        TFOUL_FTM integer NOT NULL,
                                         PRIMARY KEY (GAMEID, PLAYERID),
                                         FOREIGN KEY (GAMEID) REFERENCES GAMES (ID),
                                         FOREIGN KEY (PLAYERID) REFERENCES PLAYERS (ID)
@@ -229,8 +233,8 @@ class SQL(object):
         self.excecute(sql_create_ownership_table)
 
     def insert_game(self, game):
-        sql_game = """INSERT INTO GAMES(ID, SEASON, DATE, HTM, VTM, W)
-                        VALUES(?, ?, ?, ?, ?, ?)
+        sql_game = """INSERT INTO GAMES(ID, SEASON, SEASONTYPE, DATE, HTM, VTM, W)
+                        VALUES(?, ?, ?, ?, ?, ?, ?)
                     """
         self.excecute(sql_game, game)
 
@@ -248,9 +252,11 @@ class SQL(object):
                             OREB_PCT, DREB, DREB_PCT, AST, AST_PCT, AST_RATIO, STL, BLK, TOV,
                             PF, PLUSMINUS, USG_PCT, PACE, POSS, TOTAL_ATTEMPTS, TOTAL_PTS, TOTAL_FTA, TOTAL_FTM,
                             SHOT_ATTEMPTS, SHOT_PTS, SHOT_FTA, SHOT_FTM, SFOUL_ATTEMPTS, SFOUL_PTS, SFOUL_FTA,
-                            SFOUL_FTM, PFOUL_ATTEMPTS, PFOUL_PTS, PFOUL_FTA, PFOUL_FTM, TFOUL_PTS)
+                            SFOUL_FTM, PFOUL_ATTEMPTS, PFOUL_PTS, PFOUL_FTA, PFOUL_FTM, TFOUL_ATTEMPTS, TFOUL_PTS,
+                            TFOUL_FTA, TFOUL_FTM)
                         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                               ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                               ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                               ?, ?, ?)
                     """
         self.excecute(sql_boxscore, boxscore)
 

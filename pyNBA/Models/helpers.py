@@ -1,23 +1,17 @@
 from pyNBA.Models.features import FeatureCreation
-from pyNBA.Data.constants import ROTO_NAME_TO_NBA_NAME, SEASON_TO_REGULAR_SEASON_DATES
+from pyNBA.Data.constants import ROTO_NAME_TO_NBA_NAME
 
 
 class CleanData(object):
     def __init__(self):
         self.feature_creation = FeatureCreation()
 
-    def select_regular_season_games(self, df):
-        for season in SEASON_TO_REGULAR_SEASON_DATES:
-            regular_season_end = SEASON_TO_REGULAR_SEASON_DATES[season]['END']
-            df = df.loc[~( (df['SEASON'] == season) & (df['DATE'] > regular_season_end) )]
-        return df
-
     def drop_rows_player_inactive(self, df):
-        df = df.loc[~(df['SECONDSPLAYED'] == 0)]
+        df = df.loc[df['SECONDSPLAYED'] > 0]
         return df
 
     def drop_rows_player_injured(self, df):
-        df = df.loc[~( (df['SECONDSPLAYED'] == 0) & (df['COMMENT'] != "DNP - Coach's Decision") )]
+        df = df.loc[(df['SECONDSPLAYED'] != 0) | (df['COMMENT'] == "DNP - Coach's Decision")]
         return df
 
     def drop_rows_player_rest(self, df, thresh=1200):

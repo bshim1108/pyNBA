@@ -71,6 +71,8 @@ class PointsPerPossession(object):
 
         poss_pct_cols = ['{}_POSS_PCT'.format(i) for i in PLAY_TYPES]
         poss_pct_allowed_cols = ['{}_POSS_PCT_ALLOWED'.format(i) for i in PLAY_TYPES]
+        boxscores[poss_pct_cols] = boxscores[poss_pct_cols].replace([0], 0.001)
+        boxscores[poss_pct_allowed_cols] = boxscores[poss_pct_allowed_cols].replace([0], 0.001)
         boxscores['TOTAL_POSS_PCT'] = boxscores[poss_pct_cols].sum(axis=1)
         boxscores['TOTAL_POSS_PCT_ALLOWED'] = boxscores[poss_pct_allowed_cols].sum(axis=1)
         boxscores[poss_pct_cols] = boxscores[poss_pct_cols].div(boxscores['TOTAL_POSS_PCT'], axis=0)

@@ -2,57 +2,59 @@ from nba_api.stats.endpoints import (LeagueGameFinder, CommonPlayerInfo, ShotCha
                                      BoxScoreAdvancedV2, BoxScoreMiscV2, BoxScoreScoringV2, LeagueDashPlayerBioStats,
                                      PlayerDashboardByGameSplits)
 from pyNBA.Data.sql import SQL
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import reduce
 import pandas as pd
 from collections import Counter
 import time
 import requests
 from bs4 import BeautifulSoup
-from pyNBA.Data.constants import (SEASONS, TRADITIONAL_BOXSCORE_COLUMNS, ADVANCED_BOXSCORE_COLUMNS,
+from pyNBA.Data.constants import (INCOMPLETE_SEASONS, TRADITIONAL_BOXSCORE_COLUMNS, ADVANCED_BOXSCORE_COLUMNS,
                                   MISC_BOXSCORE_COLUMNS, SCORING_BOXSCORE_COLUMNS, TEAM_NAME_TO_ABBREVIATION,
                                   ABBREVIATION_TO_SITE, ID_TO_SITE, MIN_CONTEST_DATE, BAD_CONTEST_DATES,
-                                  POSSIBLE_POSITIONS, BAD_CONTEST_IDS, BAD_OWNERSHIP_KEYS)
+                                  POSSIBLE_POSITIONS, BAD_CONTEST_IDS, BAD_OWNERSHIP_KEYS, SEASON_TYPES)
 from pyNBA.Data.helpers import Helpers
 
 class UpdateData(object):
     def __init__(self, sql):
         self.sql = sql
+        self.helpers = Helpers()
 
     def update_game_data(self):
         query = """SELECT * FROM GAMES"""
         sql_data = self.sql.select_data(query)
         sql_ids = list(sql_data['ID'].unique())
 
-        SEASONS.sort(reverse=True)
-        for season in SEASONS:
-            games = LeagueGameFinder(
-                league_id_nullable='00', season_nullable=season, season_type_nullable='Regular Season'
-                ).get_data_frames()[0]
-            time.sleep(1.000)
-            games = games.drop_duplicates(subset='GAME_ID')
-            uninserted_games = games.loc[~games['GAME_ID'].isin(sql_ids)]
-            for _, game in uninserted_games.iterrows():
-                game_id = game['GAME_ID']
-                matchup = game['MATCHUP'].split()
-                if matchup[1] == '@':
-                    home_team, away_team = matchup[2], matchup[0]
-                else:
-                    home_team, away_team = matchup[0], matchup[2]
-                if game['TEAM_ABBREVIATION'] == home_team and game['WL'] == 'W':
-                    winning_team = home_team
-                else:
-                    winning_team = away_team
-                game = (game_id, season, game['GAME_DATE'], home_team, away_team, winning_team)
-                self.sql.insert_game(game)
+        INCOMPLETE_SEASONS.sort(reverse=True)
+        for season in INCOMPLETE_SEASONS:
+            for season_type in SEASON_TYPES:
+                games = LeagueGameFinder(
+                    league_id_nullable='00', season_nullable=season, season_type_nullable=season_type
+                    ).get_data_frames()[0]
+                time.sleep(1.000)
+                games = games.drop_duplicates(subset='GAME_ID')
+                uninserted_games = games.loc[~games['GAME_ID'].isin(sql_ids)]
+                for _, game in uninserted_games.iterrows():
+                    game_id = game['GAME_ID']
+                    matchup = game['MATCHUP'].split()
+                    if matchup[1] == '@':
+                        home_team, away_team = matchup[2], matchup[0]
+                    else:
+                        home_team, away_team = matchup[0], matchup[2]
+                    if game['TEAM_ABBREVIATION'] == home_team and game['WL'] == 'W':
+                        winning_team = home_team
+                    else:
+                        winning_team = away_team
+                    game = (game_id, season, season_type, game['GAME_DATE'], home_team, away_team, winning_team)
+                    self.sql.insert_game(game)
 
     def update_player_data(self):
         query = """SELECT * FROM PLAYERS"""
         sql_data = self.sql.select_data(query)
         sql_ids = list(sql_data['ID'].unique())
 
-        SEASONS.sort(reverse=True)
-        for season in SEASONS:
+        INCOMPLETE_SEASONS.sort(reverse=True)
+        for season in INCOMPLETE_SEASONS:
             player_bios = LeagueDashPlayerBioStats(season=season).get_data_frames()[0].fillna('')
             time.sleep(1.000)
             uninserted_players = player_bios.loc[~player_bios['PLAYER_ID'].isin(sql_ids)]
@@ -79,17 +81,18 @@ class UpdateData(object):
                 sql_ids.append(player_id)
 
     def update_boxscore_data(self, game_ids):
-        helpers = Helpers()
 
         query = """SELECT * FROM BOXSCORES"""
         sql_data = self.sql.select_data(query)
         sql_ids = list(sql_data['GAMEID'].unique())
 
         uninserted_game_ids = list(set(game_ids) - set(sql_ids))
+        uninserted_game_ids.sort()
         for game_id in uninserted_game_ids:
+            print(game_id)
             temp = []
 
-            attempts_boxscores = helpers.get_attempts_boxscores(game_id)
+            attempts_boxscores = self.helpers.get_attempts_boxscores(game_id)
             traditional_boxscores = BoxScoreTraditionalV2(
                 game_id=game_id
                 ).get_data_frames()[0][TRADITIONAL_BOXSCORE_COLUMNS]
@@ -98,8 +101,16 @@ class UpdateData(object):
             scoring_boxscores = BoxScoreScoringV2(game_id=game_id).get_data_frames()[0][SCORING_BOXSCORE_COLUMNS]
             time.sleep(1.000)
 
-            game_boxscores = reduce(lambda left, right: pd.merge(left, right, on=['GAME_ID', 'PLAYER_ID']),
-                                   [attempts_boxscores, traditional_boxscores, advanced_boxscores, misc_boxscores, scoring_boxscores])
+            game_boxscores = reduce(
+                lambda left, right: pd.merge(left, right, on=['GAME_ID', 'PLAYER_ID']),
+                [traditional_boxscores, advanced_boxscores, misc_boxscores, scoring_boxscores]
+                )
+            game_boxscores = game_boxscores.merge(attempts_boxscores, on=['GAME_ID', 'PLAYER_ID'], how='left')
+            game_boxscores[attempts_boxscores.columns] = game_boxscores[attempts_boxscores.columns].fillna(0)
+
+            if game_boxscores['PTS'].sum() == 0:
+                raise Exception('Boxscores empty for game ID: {}'.format(game_id))
+
             teams = game_boxscores['TEAM_ABBREVIATION'].unique()
             for _, player_boxscore in game_boxscores.groupby('PLAYER_ID'):
                 player_boxscore = player_boxscore.iloc[0]
@@ -107,12 +118,19 @@ class UpdateData(object):
                 player_id = str(player_boxscore['PLAYER_ID'])
                 comment = player_boxscore['COMMENT'].strip()
                 team = player_boxscore['TEAM_ABBREVIATION']
-                opp_team = teams[0] if teams[1] == team else teams[1]
+
+                if len(teams) < 2:
+                    opp_team = '???'
+                elif teams[1] == team:
+                    opp_team = teams[0]
+                else:
+                    opp_team = teams[1]
 
                 if player_boxscore['MIN'] is None:
                     boxscore = (game_id, player_id, team, opp_team, comment,
                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 else:
                     minutes_played, seconds_played = player_boxscore['MIN'].split(':')
                     seconds_played = int(minutes_played)*60 + int(seconds_played)
@@ -140,7 +158,8 @@ class UpdateData(object):
                                 int(player_boxscore['SFOUL_FTA']), int(player_boxscore['SFOUL_FTM']),
                                 int(player_boxscore['PFOUL_ATTEMPTS']), int(player_boxscore['PFOUL_PTS']),
                                 int(player_boxscore['PFOUL_FTA']), int(player_boxscore['PFOUL_FTM']),
-                                int(player_boxscore['TFOUL_PTS']))
+                                int(player_boxscore['TFOUL_ATTEMPTS']), int(player_boxscore['TFOUL_PTS']),
+                                int(player_boxscore['TFOUL_FTA']), int(player_boxscore['TFOUL_FTM']))
                 temp.append(boxscore)
 
             for t in temp:
@@ -180,7 +199,6 @@ class UpdateData(object):
 
         uninserted_game_dates = game_dates - sql_dates
         for date in uninserted_game_dates:
-            print(date)
             temp = []
 
             formatted_date = date.replace('-', '')
@@ -240,20 +258,40 @@ class UpdateData(object):
             for t in temp:
                 self.sql.insert_odds(t)
 
-    def update_quarterly_boxscore_data(self, tuples):
+    def update_quarterly_boxscore_data(self, tuples, boxscores):
         query = """SELECT * FROM QUARTERLYBOXSCORES"""
         sql_data = self.sql.select_data(query)
         subset = sql_data[['SEASON', 'GAMEID', 'DATE', 'PLAYERID']]
         sql_tuples = set([tuple(x) for x in subset.to_numpy()])
 
         uninserted_tuples = tuples - sql_tuples
-        for (season, game_id, date, player_id) in uninserted_tuples:
+        uninserted_boxscores = boxscores.loc[
+            boxscores[['SEASON', 'GAMEID', 'DATE', 'PLAYERID']].apply(
+                lambda x: tuple(x.to_numpy()) in uninserted_tuples, axis=1
+                )
+        ]
+        subset = uninserted_boxscores[['SEASON', 'SEASONTYPE', 'GAMEID', 'DATE', 'PLAYERID']]
+        tuples = [tuple(x) for x in subset.to_numpy()]
+        tuples.sort()
+
+
+        num = len(tuples)
+        i = 0
+        for (season, season_type, game_id, date, player_id) in tuples:
+            print('{}/{}'.format(str(i), str(num)))
+            i += 1
             temp = []
 
             quarterly_boxscore = PlayerDashboardByGameSplits(
-                player_id=player_id, season=season, date_from_nullable=date, date_to_nullable=date
+                player_id=player_id, season=season, date_from_nullable=date, date_to_nullable=date,
+                season_type_playoffs=season_type
                 ).get_data_frames()[2]
             time.sleep(1.000)
+
+            if quarterly_boxscore.empty:
+                raise Exception('Quarterly boxscore empty for tuple: ({}, {}, {}, {}, {})'.format(
+                season, season_type, game_id, date, player_id
+                ))
 
             for quarter, quarter_boxscore in quarterly_boxscore.groupby('GROUP_VALUE'):
                 quarter_boxscore = quarter_boxscore.iloc[0]
@@ -491,6 +529,12 @@ class QueryData(object):
             self.update_data.update_game_data()
         query = """SELECT * FROM GAMES"""
         sql_data = self.sql.select_data(query)
+
+        cutoff = datetime.now()
+        if cutoff.hour < 8:
+            cutoff = cutoff - timedelta(days=1)
+        sql_data = sql_data.loc[sql_data['DATE'] < cutoff.strftime("%Y-%m-%d")]
+
         return sql_data
 
     def query_player_data(self):
@@ -509,10 +553,7 @@ class QueryData(object):
         sql_data = self.sql.select_data(query)
 
         game_data = self.query_game_data()
-        player_data = self.query_player_data()
-        sql_data = sql_data.merge(game_data, left_on='GAMEID', right_on='ID').merge(
-            player_data, left_on='PLAYERID', right_on='ID'
-            )
+        sql_data = sql_data.merge(game_data, left_on='GAMEID', right_on='ID')
         return sql_data
 
     def query_shotchartdetail_data(self):
@@ -537,10 +578,10 @@ class QueryData(object):
     def query_quarterly_boxscore_data(self):
         if self.update:
             boxscore_data = self.query_boxscore_data()
-            boxscore_data = boxscore_data.loc[~(boxscore_data['SECONDSPLAYED'] == 0)]
+            boxscore_data = boxscore_data.loc[boxscore_data['SECONDSPLAYED'] != 0]
             subset = boxscore_data[['SEASON', 'GAMEID', 'DATE', 'PLAYERID']]
             tuples = set([tuple(x) for x in subset.to_numpy()])
-            self.update_data.update_quarterly_boxscore_data(tuples)
+            self.update_data.update_quarterly_boxscore_data(tuples, boxscore_data)
         query = """SELECT * FROM QUARTERLYBOXSCORES"""
         sql_data = self.sql.select_data(query)
         return sql_data

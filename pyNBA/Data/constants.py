@@ -1,37 +1,9 @@
 CURRENT_SEASON = '2020-21'
 
 SEASONS = ['2014-15', '2015-16', '2016-17', '2017-18', '2018-19', '2019-20', '2020-21']
+INCOMPLETE_SEASONS = ['2020-21']
 
-SEASON_TO_REGULAR_SEASON_DATES = {
-    '2014-15': {
-        'START': '2014-11-28',
-        'END': '2015-04-15'
-    },
-    '2015-16': {
-        'START': '2015-11-27',
-        'END': '2016-04-13'
-    },
-    '2016-17': {
-        'START': '2016-11-25',
-        'END': '2017-04-12'
-    },
-    '2017-18': {
-        'START': '2017-11-17',
-        'END': '2018-04-11'
-    },
-    '2018-19': {
-        'START': '2018-11-16',
-        'END': '2019-04-10'
-    },
-    '2019-20': {
-        'START': '2019-11-22',
-        'END': '2020-04-15'
-    },
-    '2020-21': {
-        'START': '2020-12-11',
-        'END': '2099-12-31'
-    }
-}
+SEASON_TYPES = ['Pre Season', 'Regular Season']
 
 TRADITIONAL_BOXSCORE_COLUMNS = ['GAME_ID', 'PLAYER_ID', 'TEAM_ABBREVIATION', 'START_POSITION', 'MIN',
                                 'PTS', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB',
@@ -334,12 +306,46 @@ LINEUP_NAME_TO_NBA_NAME = {
     'S. Dinwiddie': 'Spencer Dinwiddie',
     'D. Jordan': 'DeAndre Jordan',
     'N. Claxton': 'Nicolas Claxton',
-    'M. Harrell': 'Montrezl Harrell'
+    'M. Harrell': 'Montrezl Harrell',
+    'P. Pritchard': 'Payton Pritchard',
+    'R. Langford': 'Romeo Langford',
+    'T. Thompson': 'Tristan Thompson',
+    'M. Thybulle': 'Matisse Thybulle',
+    'T. Ferguson': 'Terrance Ferguson',
+    'K. Bates-Diop': 'Keita Bates-Diop',
+    'D. Jeffries': 'DaQuan Jeffries',
+    'R. Williams': 'Robert Williams III',
+    'M. Chriss': 'Marquese Chriss',
+    'A. Smailagic': 'Alen Smailagic',
+    'C. Matthews': 'Charles Matthews',
+    'Larry Nance': 'Larry Nance Jr.',
+    'T. Satoransky': 'Tomas Satoransky',
+    'A. Simons': 'Anfernee Simons',
+    'RJ Hampton': 'R.J. Hampton',
+    'D. Dotson': 'Damyean Dotson',
+    'F. Ntilikina': 'Frank Ntilikina',
+    'R. Bullock': 'Reggie Bullock',
+    'X. Tillman': 'Xavier Tillman',
+    'S. McDermott': 'Sean McDermott',
+    'Charlie Brown': 'Charles Brown Jr.',
+    'D. Finney-Smith': 'Dorian Finney-Smith',
+    'U. Azubuike': 'Udoka Azubuike',
+    'P. Patterson': 'Patrick Patterson',
+    'D. McDermott': 'Doug McDermott',
+    'D. Robinson': 'Duncan Robinson',
+    'M. Harkless': 'Maurice Harkless',
+    'A. Iguodala': 'Andre Iguodala',
+    'B. Ingram': 'Brandon Ingram',
+    'Z. Williamson': 'Zion Williamson',
+    'W. Gabriel': 'Wenyen Gabriel',
+    'P. Williams': 'Patrick Williams',
+    'J. Green': 'JaMychal Green'
 }
 
 LINEUP_TEAM_TO_NBA_TEAM = {
     'NY': 'NYK',
     'SA': 'SAS',
     'GS': 'GSW',
-    'PHO': 'PHX'
+    'PHO': 'PHX',
+    'NO': 'NOP'
 }

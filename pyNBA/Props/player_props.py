@@ -23,9 +23,8 @@ class PlayerProps(object):
         clean_data = CleanData()
 
         boxscores = self.query_data.query_boxscore_data()
-        boxscores = clean_data.select_regular_season_games(boxscores)
+        # boxscores = boxscores.loc[boxscores['SEASONTYPE'] == 'Regular Season']
         boxscores = clean_data.drop_rows_player_injured(boxscores)
-        boxscores = clean_data.drop_rows_player_rest(boxscores)
 
         if start_date is not None:
             boxscores = boxscores.loc[boxscores['DATE'] >= start_date]
@@ -39,11 +38,10 @@ class PlayerProps(object):
         worksheet = sh.worksheet("Data")
         current_lineups = pd.DataFrame(worksheet.get_all_records())
     
-        current_lineups = current_lineups.loc[
-            ~current_lineups['PLAYERSTATUS'].isin(['GTD', 'INACT'])
-        ]
+        current_lineups = current_lineups.loc[current_lineups['PLAYERCHANCE'] > 50]
 
-        current_lineups = current_lineups[['PLAYERID', 'SEASON', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START']]
+        current_lineups = current_lineups[['PLAYERID', 'SEASON', 'TEAM', 'OPP_TEAM', 'NAME', 'START', 'POSITION']]
+        current_lineups['PLAYERID'] = current_lineups['PLAYERID'].astype(str)
         current_lineups['DATE'] = self.current_date_string
         current_lineups['GAMEID'] = str(1e24)
 
@@ -52,6 +50,8 @@ class PlayerProps(object):
     def generate_data(self, train_start_date=None, train_end_date=None):
         print('retrieving historical boxscores...')
         historical_boxscores = self.get_historical_boxscores(train_start_date, train_end_date)
+        historical_boxscores['NAME'] = None
+        historical_boxscores['POSITION'] = None
 
         print('retrieving current players...')
         current_players = self.get_current_players()
@@ -84,6 +84,7 @@ class PlayerProps(object):
 
     def write_stat_data(self, train_start_date=None, train_end_date=None):
         predicted_boxscores = self.generate_data(train_start_date, train_end_date)
+        predicted_boxscores = predicted_boxscores.fillna(0)
         predicted_boxscores = predicted_boxscores.sort_values(by=['TEAM', 'START', 'AVG_MP(REG)_R'], ascending=False)
 
         print('writing player stat data to excel...')

@@ -3,7 +3,7 @@ import pandas as pd
 from os import path
 from datetime import datetime
 from nba_api.stats.endpoints import PlayByPlayV2, SynergyPlayTypes
-from pyNBA.Data.constants import CURRENT_SEASON, LINEUP_TEAM_TO_NBA_TEAM, LINEUP_NAME_TO_NBA_NAME
+from pyNBA.Data.constants import (CURRENT_SEASON, LINEUP_TEAM_TO_NBA_TEAM, LINEUP_NAME_TO_NBA_NAME)
 
 class Helpers(object):
     def __init__(self):
@@ -19,19 +19,23 @@ class Helpers(object):
     def get_play_by_play_attempts(self, game_id):
         play_by_play = PlayByPlayV2(game_id=game_id).get_data_frames()[0]
 
-        play_by_play['DESCRIPTION'] = None
+        play_by_play['DESCRIPTION'] = ''
         play_by_play.loc[~play_by_play['VISITORDESCRIPTION'].isnull(), 'DESCRIPTION'] = \
             play_by_play.loc[~play_by_play['VISITORDESCRIPTION'].isnull(), 'VISITORDESCRIPTION']
         play_by_play.loc[~play_by_play['HOMEDESCRIPTION'].isnull(), 'DESCRIPTION'] = \
             play_by_play.loc[~play_by_play['HOMEDESCRIPTION'].isnull(), 'HOMEDESCRIPTION']
         play_by_play.loc[~play_by_play['NEUTRALDESCRIPTION'].isnull(), 'DESCRIPTION'] = \
             play_by_play.loc[~play_by_play['NEUTRALDESCRIPTION'].isnull(), 'HOMEDESCRIPTION']
+
         play_by_play['DESCRIPTION'] = play_by_play['DESCRIPTION'].str.replace('Personal Take Foul','PFOUL')
         play_by_play['DESCRIPTION'] = play_by_play['DESCRIPTION'].str.replace('Offensive Charge Foul','OFOUL')
         play_by_play['DESCRIPTION'] = play_by_play['DESCRIPTION'].str.replace('Flagrant','FLAGRANT')
         play_by_play['DESCRIPTION'] = play_by_play['DESCRIPTION'].str.replace('Foul','FOUL')
 
-        attempt_data = play_by_play.loc[play_by_play['EVENTMSGTYPE'].isin([1, 2]), ['PERIOD', 'PCTIMESTRING', 'DESCRIPTION', 'PLAYER1_ID']]
+        attempt_data = play_by_play.loc[
+            play_by_play['EVENTMSGTYPE'].isin([1, 2]),
+            ['PERIOD', 'PCTIMESTRING', 'DESCRIPTION', 'PLAYER1_ID']
+            ]
         attempt_data = attempt_data.rename(columns={'PLAYER1_ID': 'PLAYER_ID'})
 
         ft_data = pd.DataFrame(columns=['PERIOD', 'PCTIMESTRING', 'DESCRIPTION', 'PLAYER_ID', 'FTA', 'FTM'])
@@ -44,6 +48,7 @@ class Helpers(object):
                     lambda x: self.increment_timestring(x)
                     )
             prev_time = time
+
         for (period, time), rows in raw_ft_data.groupby(['PERIOD', 'PCTIMESTRING']):
             ft_rows = rows.loc[rows['EVENTMSGTYPE'] == 3]
             if ft_rows.empty:
@@ -73,7 +78,10 @@ class Helpers(object):
                 else:
                     player_description = description
                 fta = len(player_ft_rows)
-                ftm = len(player_ft_rows.loc[~player_ft_rows['DESCRIPTION'].str.contains("MISS")])
+                ftm = len(player_ft_rows.loc[
+                    (~player_ft_rows['DESCRIPTION'].str.contains("MISS")) &
+                    (player_ft_rows['DESCRIPTION'] != '')
+                    ])
                 temp = pd.Series(
                     [period, time, player_description, player_id, fta, ftm],
                     index=['PERIOD', 'PCTIMESTRING', 'DESCRIPTION', 'PLAYER_ID', 'FTA', 'FTM']
@@ -120,7 +128,7 @@ class Helpers(object):
             'SHOT_ATTEMPTS', 'SHOT_PTS', 'SHOT_FTA', 'SHOT_FTM',
             'SFOUL_ATTEMPTS', 'SFOUL_PTS', 'SFOUL_FTA', 'SFOUL_FTM',
             'PFOUL_ATTEMPTS', 'PFOUL_PTS', 'PFOUL_FTA', 'PFOUL_FTM',
-            'TFOUL_PTS'
+            'TFOUL_ATTEMPTS', 'TFOUL_PTS', 'TFOUL_FTA', 'TFOUL_FTM'
             ])
         for player_id, player_plays in play_by_play_attempts.groupby(['PLAYER_ID']):
             shot_plays = player_plays.loc[~player_plays['DESCRIPTION'].str.contains('TRIP')]
@@ -150,9 +158,12 @@ class Helpers(object):
                 (player_plays['DESCRIPTION'].str.contains('TFOUL')) |
                 (player_plays['DESCRIPTION'].str.contains('FLAGRANTFOUL'))
                 ]
+            tfoul_attempts = len(tfoul_plays)
             tfoul_pts = tfoul_plays['PTS'].sum()
+            tfoul_fta = tfoul_plays['FTA'].sum()
+            tfoul_ftm = tfoul_plays['FTM'].sum()
 
-            total_attempts = len(player_plays) - len(tfoul_plays)
+            total_attempts = len(player_plays) - tfoul_attempts
             total_pts = player_plays['PTS'].sum()
             total_fta = player_plays['FTA'].sum()
             total_ftm = player_plays['FTM'].sum()
@@ -162,12 +173,12 @@ class Helpers(object):
                 shot_attempts, shot_pts, shot_fta, shot_ftm,
                 sfoul_attempts, sfoul_pts, sfoul_fta, sfoul_ftm,
                 pfoul_attempts, pfoul_pts, pfoul_fta, pfoul_ftm,
-                tfoul_pts],
+                tfoul_attempts, tfoul_pts, tfoul_fta, tfoul_ftm],
                 index=['PLAYER_ID', 'TOTAL_ATTEMPTS', 'TOTAL_PTS', 'TOTAL_FTA', 'TOTAL_FTM',
                     'SHOT_ATTEMPTS', 'SHOT_PTS', 'SHOT_FTA', 'SHOT_FTM',
                     'SFOUL_ATTEMPTS', 'SFOUL_PTS', 'SFOUL_FTA', 'SFOUL_FTM',
                     'PFOUL_ATTEMPTS', 'PFOUL_PTS', 'PFOUL_FTA', 'PFOUL_FTM',
-                    'TFOUL_PTS']
+                    'TFOUL_ATTEMPTS', 'TFOUL_PTS', 'TFOUL_FTA', 'TFOUL_FTM']
                 )
             attempts_boxscores = attempts_boxscores.append(temp, ignore_index=True)
 
@@ -241,10 +252,11 @@ class Helpers(object):
                 player_name = row.find('a').text
                 status_data = row.find('span', class_='lineup__inj')
                 player_status = 'Healthy' if status_data is None else status_data.text
+                player_chance = int(row_class[1].split('-')[-1])
                 if player_position != 'BE' and player_name not in players_added:
                     temp = pd.Series(
-                        [player_name, start, player_status],
-                        index=['NAME', 'START', 'PLAYERSTATUS']
+                        [player_name, start, player_status, player_chance],
+                        index=['NAME', 'START', 'PLAYERSTATUS', 'PLAYERCHANCE']
                         )
                     player_data = player_data.append(temp, ignore_index=True)
                     players_added[player_name] = 1

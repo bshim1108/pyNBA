@@ -20,7 +20,7 @@ class CurrentPlayers(object):
         team_to_status = {}
 
         current_player_data = pd.DataFrame(columns=[
-            'TEAM', 'NAME', 'START', 'PLAYERSTATUS'
+            'TEAM', 'NAME', 'START', 'PLAYERSTATUS', 'PLAYERCHANCE'
         ])
 
         URL = 'https://www.rotowire.com/basketball/nba-lineups.php'
@@ -76,18 +76,26 @@ class CurrentPlayers(object):
 
         current_data['START'] = current_data['START'].fillna(0)
         current_data['PLAYERSTATUS'] = current_data['PLAYERSTATUS'].fillna('Healthy')
+        current_data['PLAYERCHANCE'] = current_data['PLAYERCHANCE'].fillna(100)
         current_data['SEASON'] = CURRENT_SEASON
 
         current_data = current_data[[
             'SEASON', 'LINEUPSTATUS', 'PLAYERID', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION',
-            'START', 'PLAYERSTATUS'
+            'START', 'PLAYERSTATUS', 'PLAYERCHANCE'
             ]]
+
+        missing_players = current_player_data.loc[
+            ~current_player_data['NAME'].isin(roster_data['NAME'].unique())
+            ]['NAME'].unique()
+
+        if len(missing_players) > 0:
+            raise Exception('Unknown player names in rotowire projected lineups: {}'.format(','.join(missing_players)))
 
         return current_data
 
     def write_lineup_data(self):
         current_lineups = self.get_lineup_data()
-        current_lineups = current_lineups.sort_values(by=['TEAM', 'START'], ascending=[True, False])
+        current_lineups = current_lineups.sort_values(by=['TEAM', 'START', 'PLAYERCHANCE'], ascending=[True, False, False])
 
         print('writing currnet lineup data to excel...')
         gc = gspread.service_account()
