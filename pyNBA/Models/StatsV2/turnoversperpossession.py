@@ -31,7 +31,7 @@ class TurnoversPerPossession(object):
 
         predicted_data = predicted_data.rename(columns={'AVG_TURNOVERS/POSSESSION': 'TOV/POSS'})
         cols = [
-            'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START',
+            'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START', 'PLAYERCHANCE',
             'TOV/POSS'
             ]
         return predicted_data[cols]

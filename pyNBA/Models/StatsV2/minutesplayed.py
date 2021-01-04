@@ -49,7 +49,7 @@ class MinutesPlayed(object):
         predicted_data[['AVG_MP(REG)_R', 'MA3_MP(REG)_R']] = predicted_data[['AVG_MP(REG)_R', 'MA3_MP(REG)_R']].fillna(0)
 
         cols = [
-            'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START',
+            'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START', 'PLAYERCHANCE',
             'AVG_MP(REG)_R', 'MA3_MP(REG)_R'
             ]
         return predicted_data[cols]

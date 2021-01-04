@@ -81,7 +81,6 @@ class UpdateData(object):
                 sql_ids.append(player_id)
 
     def update_boxscore_data(self, game_ids):
-
         query = """SELECT * FROM BOXSCORES"""
         sql_data = self.sql.select_data(query)
         sql_ids = list(sql_data['GAMEID'].unique())
@@ -93,6 +92,10 @@ class UpdateData(object):
             temp = []
 
             attempts_boxscores = self.helpers.get_attempts_boxscores(game_id)
+            if attempts_boxscores.empty:
+                print('Could not construct attempts boxscores for game_id: {}'.format(game_id))
+                continue
+
             traditional_boxscores = BoxScoreTraditionalV2(
                 game_id=game_id
                 ).get_data_frames()[0][TRADITIONAL_BOXSCORE_COLUMNS]
@@ -109,7 +112,8 @@ class UpdateData(object):
             game_boxscores[attempts_boxscores.columns] = game_boxscores[attempts_boxscores.columns].fillna(0)
 
             if game_boxscores['PTS'].sum() == 0:
-                raise Exception('Boxscores empty for game ID: {}'.format(game_id))
+                print('Boxscores empty for game_id: {}'.format(game_id))
+                continue
 
             teams = game_boxscores['TEAM_ABBREVIATION'].unique()
             for _, player_boxscore in game_boxscores.groupby('PLAYER_ID'):
@@ -553,7 +557,7 @@ class QueryData(object):
         sql_data = self.sql.select_data(query)
 
         game_data = self.query_game_data()
-        sql_data = sql_data.merge(game_data, left_on='GAMEID', right_on='ID')
+        sql_data = sql_data.merge(game_data, left_on='GAMEID', right_on='ID', how='left')
         return sql_data
 
     def query_shotchartdetail_data(self):

@@ -103,7 +103,7 @@ class PossessionsPerMinute(object):
             'PLAYER_POSSESSIONS/MINUTE': 'POSS/MP', 'OPP_POSSESSIONS/MINUTE_ALLOWED': 'POSS/MP_DEF'
             })
         cols = [
-            'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START',
+            'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START', 'PLAYERCHANCE',
             'POSS/MP', 'POSS/MP_DEF'
             ]
         return predicted_data[cols]

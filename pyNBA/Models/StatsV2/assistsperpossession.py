@@ -31,7 +31,7 @@ class AssistsPerPossession(object):
 
         predicted_data = predicted_data.rename(columns={'AVG_ASSISTS/POSSESSION': 'AST/POSS'})
         cols = [
-            'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START',
+            'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START', 'PLAYERCHANCE',
             'AST/POSS'
             ]
         return predicted_data[cols]

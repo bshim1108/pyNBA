@@ -239,7 +239,7 @@ class ReboundsPerPossession(object):
             'AVG_DREB/DREB_CHANCE': 'DREB/CH'
             })
         cols = [
-            'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START',
+            'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START', 'PLAYERCHANCE',
             'OREB(CH)/POSS', 'OREB(CH)/POSS_DEF',
             'OREB/CH', 'OREB/CH_DEF', 'DREB/CH', 'DREB/CH_DEF'
             ]

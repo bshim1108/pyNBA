@@ -14,16 +14,16 @@ from pyNBA.Models.StatsV2.reboundsperpossession import ReboundsPerPossession
 from pyNBA.Models.StatsV2.turnoversperpossession import TurnoversPerPossession
 
 class PlayerProps(object):
-    def __init__(self):
+    def __init__(self, update=True):
         self.current_date_string = datetime.now().strftime("%Y-%m-%d")
-        self.query_data = QueryData(update=True)
+        self.query_data = QueryData(update=update)
         self.gc = gspread.service_account()
 
     def get_historical_boxscores(self, start_date=None, end_date=None):
         clean_data = CleanData()
 
         boxscores = self.query_data.query_boxscore_data()
-        # boxscores = boxscores.loc[boxscores['SEASONTYPE'] == 'Regular Season']
+        boxscores = boxscores.loc[boxscores['SEASONTYPE'] == 'Regular Season']
         boxscores = clean_data.drop_rows_player_injured(boxscores)
 
         if start_date is not None:
@@ -37,10 +37,8 @@ class PlayerProps(object):
         sh = self.gc.open('Current Lineups')
         worksheet = sh.worksheet("Data")
         current_lineups = pd.DataFrame(worksheet.get_all_records())
-    
-        current_lineups = current_lineups.loc[current_lineups['PLAYERCHANCE'] > 50]
 
-        current_lineups = current_lineups[['PLAYERID', 'SEASON', 'TEAM', 'OPP_TEAM', 'NAME', 'START', 'POSITION']]
+        current_lineups = current_lineups[['PLAYERID', 'SEASON', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START', 'PLAYERCHANCE']]
         current_lineups['PLAYERID'] = current_lineups['PLAYERID'].astype(str)
         current_lineups['DATE'] = self.current_date_string
         current_lineups['GAMEID'] = str(1e24)
@@ -52,6 +50,7 @@ class PlayerProps(object):
         historical_boxscores = self.get_historical_boxscores(train_start_date, train_end_date)
         historical_boxscores['NAME'] = None
         historical_boxscores['POSITION'] = None
+        historical_boxscores['PLAYERCHANCE'] = None
 
         print('retrieving current players...')
         current_players = self.get_current_players()
@@ -77,7 +76,7 @@ class PlayerProps(object):
 
         predicted_boxscores = reduce(
             lambda left, right: pd.merge(
-                left, right, on=['SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START']
+                left, right, on=['SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START', 'PLAYERCHANCE']
                 ), [mp_out, ppm_out, ppp_out, app_out, rpp_out, tpp_out]
                 )
         return predicted_boxscores
@@ -85,7 +84,11 @@ class PlayerProps(object):
     def write_stat_data(self, train_start_date=None, train_end_date=None):
         predicted_boxscores = self.generate_data(train_start_date, train_end_date)
         predicted_boxscores = predicted_boxscores.fillna(0)
-        predicted_boxscores = predicted_boxscores.sort_values(by=['TEAM', 'START', 'AVG_MP(REG)_R'], ascending=False)
+        predicted_boxscores['PRIMARY_POSITION'] = predicted_boxscores['POSITION'].apply(lambda x: x.split('-')[0] if '-' in x else x)
+        predicted_boxscores = predicted_boxscores.sort_values(
+            by=['TEAM', 'START', 'PRIMARY_POSITION', 'AVG_MP(REG)_R'], ascending=False
+            )
+        predicted_boxscores = predicted_boxscores.drop(columns=['PRIMARY_POSITION'])
 
         print('writing player stat data to excel...')
         sh = self.gc.open('Predicted Stats')

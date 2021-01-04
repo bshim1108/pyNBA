@@ -97,14 +97,16 @@ class PointsPerPossession(object):
             boxscores['PPP_ADJ'] = boxscores.apply(
                 lambda row: row['{}_PPP_ALLOWED'.format(play_type)]/row['AVG_{}_PPP_ALLOWED_PLAYED_AGAINST'.format(play_type)] \
                     if (not np.isnan(row['{}_PPP_ALLOWED'.format(play_type)]) and \
-                        not np.isnan(row['AVG_{}_PPP_ALLOWED_PLAYED_AGAINST'.format(play_type)])) \
+                        not np.isnan(row['AVG_{}_PPP_ALLOWED_PLAYED_AGAINST'.format(play_type)]) and
+                        row['AVG_{}_PPP_ALLOWED_PLAYED_AGAINST'.format(play_type)] != 0) \
                         else 1,
                 axis = 1
                 )
             boxscores['POSS_PCT_ADJ'] = boxscores.apply(
                 lambda row: row['{}_POSS_PCT_ALLOWED'.format(play_type)]/row['AVG_{}_POSS_PCT_ALLOWED_PLAYED_AGAINST'.format(play_type)] \
                     if (not np.isnan(row['{}_POSS_PCT_ALLOWED'.format(play_type)]) and \
-                        not np.isnan(row['AVG_{}_POSS_PCT_ALLOWED_PLAYED_AGAINST'.format(play_type)])) \
+                        not np.isnan(row['AVG_{}_POSS_PCT_ALLOWED_PLAYED_AGAINST'.format(play_type)]) and
+                        row['AVG_{}_POSS_PCT_ALLOWED_PLAYED_AGAINST'.format(play_type)] != 0) \
                         else 1,
                 axis = 1
                 )
@@ -139,7 +141,7 @@ class PointsPerPossession(object):
             'POINTS/ATTEMPT_DEF_ADJ': 'PTS/ATT_DEF'
             })
         cols = [
-            'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START',
+            'SEASON', 'DATE', 'TEAM', 'OPP_TEAM', 'NAME', 'POSITION', 'START', 'PLAYERCHANCE',
             'ATT/POSS', 'PTS/ATT', 'PTS/ATT_DEF'
             ]
         return predicted_data[cols]

@@ -18,6 +18,9 @@ class Helpers(object):
 
     def get_play_by_play_attempts(self, game_id):
         play_by_play = PlayByPlayV2(game_id=game_id).get_data_frames()[0]
+        if play_by_play.empty:
+            print('PlayByPlay data empty for game_id: {}'.format(game_id))
+            return pd.DataFrame()
 
         play_by_play['DESCRIPTION'] = ''
         play_by_play.loc[~play_by_play['VISITORDESCRIPTION'].isnull(), 'DESCRIPTION'] = \
@@ -122,6 +125,8 @@ class Helpers(object):
 
     def get_attempts_boxscores(self, game_id):
         play_by_play_attempts = self.get_play_by_play_attempts(game_id)
+        if play_by_play_attempts.empty:
+            return pd.DataFrame()
 
         attempts_boxscores = pd.DataFrame(columns=[
             'PLAYER_ID', 'TOTAL_ATTEMPTS', 'TOTAL_PTS', 'TOTAL_FTA', 'TOTAL_FTM',

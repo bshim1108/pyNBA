@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 from bs4 import BeautifulSoup
 from pyNBA.Data.helpers import Helpers
-from pyNBA.Data.constants import CURRENT_SEASON
+from pyNBA.Data.constants import CURRENT_SEASON, UNKNOWN_PLAYERS
 from nba_api.stats.endpoints import CommonTeamRoster
 from nba_api.stats.static.teams import find_team_by_abbreviation
 
@@ -50,6 +50,10 @@ class CurrentPlayers(object):
             
             current_player_data = current_player_data.append(away_player_data)
             current_player_data = current_player_data.append(home_player_data)
+        
+        current_player_data = current_player_data.loc[
+            ~current_player_data['NAME'].isin(UNKNOWN_PLAYERS)
+        ]
 
         roster_data = pd.DataFrame()
         for team_abbreviation in current_player_data['TEAM'].unique():
