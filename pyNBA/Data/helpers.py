@@ -2,12 +2,33 @@ import time
 import pandas as pd
 from os import path
 from datetime import datetime
+import requests
+from bs4 import BeautifulSoup
 from nba_api.stats.endpoints import PlayByPlayV2, SynergyPlayTypes
-from pyNBA.Data.constants import (CURRENT_SEASON, LINEUP_TEAM_TO_NBA_TEAM, LINEUP_NAME_TO_NBA_NAME)
+from pyNBA.Data.constants import (CURRENT_SEASON, LINEUP_TEAM_TO_NBA_TEAM, LINEUP_NAME_TO_NBA_NAME, NUMBERFIRE_NAME_TO_NBA_NAME)
 
 class Helpers(object):
     def __init__(self):
         pass
+
+    def get_player_minutes(self):
+        player_to_mintes = {}
+
+        URL = 'https://www.numberfire.com/nba/daily-fantasy/daily-basketball-projections'
+        page = requests.get(URL)
+        soup = BeautifulSoup(page.content, 'html.parser')
+
+        players = soup.find_all('tr', {'data-sport-path': 'nba'})
+        for player in players:
+            name = player.find('a', {'class': 'full'}).text.strip()
+            if name in NUMBERFIRE_NAME_TO_NBA_NAME:
+                name = NUMBERFIRE_NAME_TO_NBA_NAME[name]
+
+            minutes = float(player.find('td', {'class': 'min'}).text.strip())
+
+            player_to_mintes[name] = minutes
+
+        return player_to_mintes
 
     def increment_timestring(self, timestring):
         temp = timestring.split(':')

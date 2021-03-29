@@ -139,6 +139,8 @@ class UpdateData(object):
                     minutes_played, seconds_played = player_boxscore['MIN'].split(':')
                     seconds_played = int(minutes_played)*60 + int(seconds_played)
                     start = 0 if player_boxscore['START_POSITION'] == '' else 1
+                    pct_ast_2pm = float(player_boxscore['PCT_AST_2PM']) if player_boxscore['PCT_AST_2PM'] is not None else 0
+                    pct_ast_3pm = float(player_boxscore['PCT_AST_3PM']) if player_boxscore['PCT_AST_3PM'] is not None else 0
 
                     boxscore = (game_id, player_id, team, opp_team, comment,
                                 start, seconds_played, int(player_boxscore['PTS']), int(player_boxscore['FGM']),
@@ -146,7 +148,7 @@ class UpdateData(object):
                                 int(player_boxscore['FTM']), int(player_boxscore['FTA']),
                                 int(player_boxscore['PTS_OFF_TOV']), int(player_boxscore['PTS_2ND_CHANCE']),
                                 int(player_boxscore['PTS_FB']), int(player_boxscore['PTS_PAINT']),
-                                float(player_boxscore['PCT_AST_2PM']), float(player_boxscore['PCT_AST_3PM']),
+                                pct_ast_2pm, pct_ast_3pm,
                                 int(player_boxscore['OREB']), float(player_boxscore['OREB_PCT']),
                                 int(player_boxscore['DREB']), float(player_boxscore['DREB_PCT']),
                                 int(player_boxscore['AST']), float(player_boxscore['AST_PCT']),
@@ -164,6 +166,7 @@ class UpdateData(object):
                                 int(player_boxscore['PFOUL_FTA']), int(player_boxscore['PFOUL_FTM']),
                                 int(player_boxscore['TFOUL_ATTEMPTS']), int(player_boxscore['TFOUL_PTS']),
                                 int(player_boxscore['TFOUL_FTA']), int(player_boxscore['TFOUL_FTM']))
+
                 temp.append(boxscore)
 
             for t in temp:
