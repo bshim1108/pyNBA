@@ -34,6 +34,12 @@ class PointsPerPossession(object):
             new_col_name='AVG_POINTS/ATTEMPT', weight_col_name='ATTEMPTS'
         )
 
+        boxscores = feature_creation.expanding_sum(
+            df=boxscores, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='ATTEMPTS', new_col_name='SUM_ATTEMPTS'
+            )
+
+        boxscores.loc[boxscores['SUM_ATTEMPTS'] == 0, 'AVG_POINTS/ATTEMPT'] = boxscores['PTS'].sum()/boxscores['ATTEMPTS'].sum()
+
         # adjustment for defense (points per attempt)
         for play_type in PLAY_TYPES:
             player_play_type_data = pd.DataFrame()

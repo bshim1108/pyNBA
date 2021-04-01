@@ -6,7 +6,6 @@ from pyNBA.Models.base import CatBoostRegressionModel, WeightFunctions
 
 from pyNBA.Models.constants import MTPS_MODEL_PARAMS
 
-
 class MTPSModel(object):
     def __init__(self, train_data, test_data):
         self.feature_creation = FeatureCreation()

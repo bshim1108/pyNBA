@@ -633,7 +633,7 @@ LINEUP_NAME_TO_NBA_NAME = {
     'D. Theis': 'Daniel Theis'
 }
 
-UNKNOWN_PLAYERS   = ['LaMarcus Aldridge', 'G. Dieng']
+UNKNOWN_PLAYERS   = ['Jeff Teague']
 
 LINEUP_TEAM_TO_NBA_TEAM = {
     'NY': 'NYK',
@@ -662,5 +662,8 @@ NUMBERFIRE_NAME_TO_NBA_NAME = {
     'PJ Washington': 'P.J. Washington',
     'Wesley Iwundu': 'Wes Iwundu',
     'Bruce Brown Jr.': 'Bruce Brown',
-    'Dennis Smith': 'Dennis Smith Jr.'
+    'Dennis Smith': 'Dennis Smith Jr.',
+    'Juan Hernangomez': 'Juancho Hernangomez',
+    'Sviatoslav Mykhailiuk': 'Svi Mykhailiuk',
+    'Troy Brown': 'Troy Brown Jr.'
 }

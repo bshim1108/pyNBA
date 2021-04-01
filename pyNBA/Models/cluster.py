@@ -23,6 +23,8 @@ class Cluster(object):
         dists = (k_means.transform(data)**2).sum(axis=1).round(2)
         return pd.DataFrame({'CLUSTER': clusters, 'CENTROID_DISTANCE': dists}, index=self.df.index)
 
+        c = 'adnbansodabsfiubgfolibsaefiglbEI;UFHGoe;fhoewQHFqwfhfjkabsflajsbfoasbfiasbfkasbflajsbfljsabflanslfhajsl;fhlasfhlkahflakhflakhsflakhsflahsflkahsf'
+
 
 class Evaluate(object):
     def __init__(self, df, cluster_cols):

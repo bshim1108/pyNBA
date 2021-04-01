@@ -86,7 +86,7 @@ class PlayerProps(object):
         predicted_boxscores = predicted_boxscores.fillna(0)
         predicted_boxscores['PRIMARY_POSITION'] = predicted_boxscores['POSITION'].apply(lambda x: x.split('-')[0] if '-' in x else x)
         predicted_boxscores = predicted_boxscores.sort_values(
-            by=['TEAM', 'START', 'PRIMARY_POSITION', 'AVG_MP(REG)_R'], ascending=False
+            by=['TEAM', 'START', 'PRIMARY_POSITION', 'MINUTES_PROJECTION'], ascending=False
             )
         predicted_boxscores = predicted_boxscores.drop(columns=['PRIMARY_POSITION'])
 
