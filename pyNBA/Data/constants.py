@@ -541,7 +541,7 @@ LINEUP_NAME_TO_NBA_NAME = {
     'R. Rubio': 'Ricky Rubio',
     'D. Jones': {
         'POR': 'Derrick Jones Jr.',
-        'LAL': 'Damian Jones'
+        'SAC': 'Damian Jones'
         },
     'M. Bagley': 'Marvin Bagley III',
     'J. Ramsey': "Jahmi'us Ramsey",
@@ -630,10 +630,15 @@ LINEUP_NAME_TO_NBA_NAME = {
     'L. Dort': 'Luguentz Dort',
     'J. Allen': 'Jarrett Allen',
     'Z. LaVine': 'Zach LaVine',
-    'D. Theis': 'Daniel Theis'
+    'D. Theis': 'Daniel Theis',
+    'I. Brazdeikis': 'Ignas Brazdeikis',
+    'J. Collins': 'John Collins',
+    'G. Dieng': 'Gorgui Dieng',
+    'Kira Lewis': 'Kira Lewis Jr.',
+    'T. Maxey': 'Tyrese Maxey'
 }
 
-UNKNOWN_PLAYERS   = ['Jeff Teague']
+UNKNOWN_PLAYERS = [str]
 
 LINEUP_TEAM_TO_NBA_TEAM = {
     'NY': 'NYK',
@@ -665,5 +670,6 @@ NUMBERFIRE_NAME_TO_NBA_NAME = {
     'Dennis Smith': 'Dennis Smith Jr.',
     'Juan Hernangomez': 'Juancho Hernangomez',
     'Sviatoslav Mykhailiuk': 'Svi Mykhailiuk',
-    'Troy Brown': 'Troy Brown Jr.'
+    'Troy Brown': 'Troy Brown Jr.',
+    'Terence Davis II': 'Terence Davis'
 }

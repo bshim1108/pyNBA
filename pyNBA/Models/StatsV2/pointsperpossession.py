@@ -26,6 +26,12 @@ class PointsPerPossession(object):
             new_col_name='AVG_ATTEMPTS/POSSESSION', weight_col_name='POSS'
         )
 
+        boxscores = feature_creation.expanding_sum(
+            df=boxscores, group_col_names=['SEASON', 'TEAM', 'PLAYERID'], col_name='POSS', new_col_name='SUM_POSS'
+            )
+
+        boxscores.loc[boxscores['SUM_POSS'] == 0, 'AVG_ATTEMPTS/POSSESSION'] = boxscores['ATTEMPTS'].sum()/boxscores['POSS'].sum()
+
         boxscores['POINTS/ATTEMPT'] = boxscores['PTS']/boxscores['ATTEMPTS']
 
         # average points per attempt
