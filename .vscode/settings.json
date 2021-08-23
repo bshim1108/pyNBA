@@ -1,5 +1,8 @@
 {
     "python.pythonPath": "/Users/brandonshimiaie/Projects/pyNBA/venv/bin/python3.9",
-    "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true
+    "python.linting.pylintArgs": [
+        "--init-hook",
+        "import sys; sys.path.append('/Users/brandonshimiaie/Projects/pyNBA')",
+        "--max-line-length=130"
+    ]
 }

@@ -68,7 +68,7 @@ BAD_CONTEST_IDS = set([
 
 POSSIBLE_POSITIONS = ['PG', 'SG', 'SF', 'PF', 'C']
 
-ROTO_NAME_TO_NBA_NAME = {
+ROTOGURU_NAME_TO_NBA_NAME = {
     'Nene Hilario': 'Nene',
     'Jose Barea': 'J.J. Barea',
     'K.J. McDaniels': 'KJ McDaniels',
@@ -128,8 +128,12 @@ ROTO_NAME_TO_NBA_NAME = {
     'Vince Hunter': 'Vincent Hunter',
     "Maurice N'dour": "Maurice Ndour",
     'A.J. Hammons': 'AJ Hammons',
-    'Sheldon McClellan': 'Sheldon Mac'
+    'Sheldon McClellan': 'Sheldon Mac',
+    'Xavier Tillman': 'Xavier Tillman Sr.',
+    'Didi Louzada Silva': 'Didi Louzada',
+    'Kenyon Martin Jr.': 'KJ Martin',
 }
+BAD_ROTOGURU_DATES = ['2020-01-21']
 
 DB_TEAM_TO_NBA_TEAM = {
     'PHO': 'PHX',
@@ -635,10 +639,14 @@ LINEUP_NAME_TO_NBA_NAME = {
     'J. Collins': 'John Collins',
     'G. Dieng': 'Gorgui Dieng',
     'Kira Lewis': 'Kira Lewis Jr.',
-    'T. Maxey': 'Tyrese Maxey'
+    'T. Maxey': 'Tyrese Maxey',
+    'R. Lopez': 'Robin Lopez',
+    'J. Henson': 'John Henson',
+    'A. Brooks': 'Armoni Brooks',
+    'G. Payton': 'Gary Payton II'
 }
 
-UNKNOWN_PLAYERS = [str]
+UNKNOWN_PLAYERS = ['Shaquille Harrison', 'J. Bell' ]
 
 LINEUP_TEAM_TO_NBA_TEAM = {
     'NY': 'NYK',
@@ -672,4 +680,161 @@ NUMBERFIRE_NAME_TO_NBA_NAME = {
     'Sviatoslav Mykhailiuk': 'Svi Mykhailiuk',
     'Troy Brown': 'Troy Brown Jr.',
     'Terence Davis II': 'Terence Davis'
+}
+
+DAILY_FANTASY_FUEL_START_DATE = '2019-10-22'
+DAILY_FANTASY_FUEL_SITES = ['draftkings', 'fanduel']
+DAILY_FANTASY_FUEL_BAD_DATES = ['2020-01-21', '2020-12-22']
+
+ROTOWIRE_START_DATE = '2015-10-27'
+ROTOWIRE_NAME_TO_NBA_NAME = {
+    'Cam Reynolds': 'Cameron Reynolds',
+    'Charlie Brown': 'Charles Brown Jr.',
+    'Danuel House': 'Danuel House Jr.',
+    'Derrick Jones': 'Derrick Jones Jr.',
+    'Gary Payton': 'Gary Payton II',
+    'Gary Trent': 'Gary Trent Jr.',
+    'Harry Giles': 'Harry Giles III',
+    'Jaren Jackson': 'Jaren Jackson Jr.',
+    'Joseph Young': 'Joe Young',
+    'Kelly Oubre': 'Kelly Oubre Jr.',
+    'Kevin Knox': 'Kevin Knox II',
+    'Kevin Porter': 'Kevin Porter Jr.',
+    'Kenyon Martin': 'KJ Martin',
+    'Kira Lewis': 'Kira Lewis Jr.',
+    'Larry Nance': 'Larry Nance Jr.',
+    'Lonnie Walker': 'Lonnie Walker IV',
+    'Marcus Morris': 'Marcus Morris Sr.',
+    'Marvin Bagley': 'Marvin Bagley III',
+    'Michael Porter': 'Michael Porter Jr.',
+    'Otto Porter': 'Otto Porter Jr.',
+    'Robert Williams': 'Robert Williams III',
+    'Robert Woodard': 'Robert Woodard II',
+    'T.J. Leaf': 'TJ Leaf',
+    'Tim Hardaway': 'Tim Hardaway Jr.',
+    'Troy Brown': 'Troy Brown Jr.',
+    'Vernon Carey': 'Vernon Carey Jr.',
+    'Wendell Carter': 'Wendell Carter Jr.',
+    'Xavier Tillman': 'Xavier Tillman Sr.',
+    'Zach Norvell': 'Zach Norvell Jr.'
+}
+
+LINESTARAPP_SITEID_TO_SITE = {
+    1: 'DRAFTKINGS',
+    2: 'FANDUEL'
+}
+LINESTARAPP_MIN_PID = 207
+LINESTARAPP_MIN_DEF_PID = 607
+LINESTARAPP_INVALID_PID_RANGE = (1168, 1292)
+LINESTARAPP_INVALID_PID_VALUES = set([1309])
+LINESTARAPP_TEAM_TO_NBA_TEAM = {
+    'NO': 'NOP',
+    'GS': 'GSW',
+    'NY': 'NYK',
+    'SA': 'SAS',
+    'PHO': 'PHX'
+}
+LINESTARAPP_NAME_TO_NBA_NAME = {
+    ' Nene': 'Nene',
+    'A.J. Hammons': 'AJ Hammons',
+    'Andrew White': 'Andrew White III',
+    'André Miller': 'Andre Miller',
+    'B.J. Johnson': 'BJ Johnson',
+    'Billy Garrett Jr.': 'Billy Garrett',
+    'Brad Beal': 'Bradley Beal',
+    'Brian Bowen': 'Brian Bowen II',
+    'Bruce Brown Jr.': 'Bruce Brown',
+    'Bryce Jones': 'Bryce Dejean-Jones',
+    'C.J. McCollum': 'CJ McCollum',
+    'C.J. Miles': 'CJ Miles',
+    'Cameron Reddish': 'Cam Reddish',
+    'Charles Brown': 'Charles Brown Jr.',
+    'Charlie Brown': 'Charles Brown Jr.',
+    'Cristiano Felício': 'Cristiano Felicio',
+    'D.J. Stephens': 'DJ Stephens',
+    'Danté Exum': 'Dante Exum',
+    'Danuel House': 'Danuel House Jr.',
+    'Dejounte Murray': 'Dejounte Murray',
+    'Denis Schroder': 'Dennis Schroder',
+    'Dennis Smith': 'Dennis Smith Jr.',
+    'Derrick Jones': 'Derrick Jones Jr.',
+    'Derrick Walton': 'Derrick Walton Jr.',
+    'Didi Louzada Silva': 'Didi Louzada',
+    'Frank Mason III': 'Frank Mason',
+    'Gary Trent': 'Gary Trent Jr.',
+    'Glenn Robinson': 'Glenn Robinson III',
+    'Guillermo Hernangomez': 'Willy Hernangomez',
+    'Guillermo Hernangómez': 'Willy Hernangomez',
+    'Harry Giles': 'Harry Giles III',
+    'Ishmael Smith': 'Ish Smith',
+    'J.J. Hickson': 'JJ Hickson',
+    'J.J. Redick': 'JJ Redick',
+    'J.R. Smith': 'JR Smith',
+    'Jacob Evans III': 'Jacob Evans',
+    'Jakarr Sampson': 'JaKarr Sampson',
+    'James Ennis': 'James Ennis III',
+    'James Webb': 'James Webb III',
+    'Jaren Jackson': 'Jaren Jackson Jr.',
+    "Johnny O'Bryant": "Johnny O'Bryant III",
+    'Joseph Young': 'Joe Young',
+    'Juan Hernangomez': 'Juancho Hernangomez',
+    'Juancho Hernangómez': 'Juancho Hernangomez',
+    'José Calderón': 'Jose Calderon',
+    'Jose Juan Barea': 'J.J. Barea',
+    'K.J. McDaniels': 'KJ McDaniels',
+    'KJ Martin Jr.': 'KJ Martin',
+    'Kelly Oubre': 'Kelly Oubre Jr.',
+    'Kenyon Martin': 'KJ Martin',
+    'Kevin Knox': 'Kevin Knox II',
+    'Kevin Martín': 'Kevin Martin',
+    'Kevin Porter': 'Kevin Porter Jr.',
+    'Kira Lewis': 'Kira Lewis Jr.',
+    'Larry Nance': 'Larry Nance Jr.',
+    'Lonnie Walker': 'Lonnie Walker IV',
+    'Louis Amundson': 'Lou Amundson',
+    'Louis Williams': 'Lou Williams',
+    'Luc Richard Mbah a Moute': 'Luc Mbah a Moute',
+    'Manu Ginóbili': 'Manu Ginobili',
+    'Marcus Morris': 'Marcus Morris Sr.',
+    'Marvin Bagley': 'Marvin Bagley III',
+    'Melvin Frazier': 'Melvin Frazier Jr.',
+    'Michael Porter': 'Michael Porter Jr.',
+    'Mitch Creek': 'Mitchell Creek',
+    'Moe Harkless': 'Maurice Harkless',
+    'Mohamed Bamba': 'Mo Bamba',
+    'Nazareth Mitrou-Long': 'Naz Mitrou-Long',
+    'Nene Hilario': 'Nene',
+    'Nicolás Brussino': 'Nicolas Brussino',
+    'Nicolás Laprovittola': 'Nicolas Laprovittola',
+    'Otto Porter': 'Otto Porter Jr.',
+    'P.J. Dozier': 'PJ Dozier',
+    'P.J. Hairston': 'PJ Hairston',
+    'PJ Tucker': 'P.J. Tucker',
+    'PJ Washington': 'P.J. Washington',
+    'Patrick Mills': 'Patty Mills',
+    'Phil (Flip) Pressey': 'Phil Pressey',
+    'R.J. Hunter': 'RJ Hunter',
+    'Robert Williams': 'Robert Williams III',
+    'Robert Woodard': 'Robert Woodard II',
+    'Roy Devyn Marble': 'Devyn Marble',
+    'Sergio Rodríguez': 'Sergio Rodriguez',
+    'Sergio  Rodríguez': 'Sergio Rodriguez',
+    'Sheldon McClellan': 'Sheldon Mac',
+    'Stephen Zimmerman Jr.': 'Stephen Zimmerman',
+    'Sviatoslav Mykhailiuk': 'Svi Mykhailiuk',
+    'T.J. Leaf': 'TJ Leaf',
+    'TJ Warren': 'T.J. Warren',
+    'Tim Hardaway': 'Tim Hardaway Jr.',
+    'Timothé Luwawu-Cabarrot': 'Timothe Luwawu-Cabarrot',
+    'Troy Brown': 'Troy Brown Jr.',
+    'Vernon Carey': 'Vernon Carey Jr.',
+    'Vince Hunter': 'Vincent Hunter',
+    'Walter Lemon': 'Walt Lemon Jr.',
+    'Walter Lemon Jr.': 'Walt Lemon Jr.',
+    'Walter Tavares': 'Edy Tavares',
+    'Wayne Selden Jr.': 'Wayne Selden',
+    'Wendell Carter': 'Wendell Carter Jr.',
+    'Xavier Tillman': 'Xavier Tillman Sr.',
+    'Zach Norvell': 'Zach Norvell Jr.',
+    'Álex Abrines': 'Alex Abrines'
 }

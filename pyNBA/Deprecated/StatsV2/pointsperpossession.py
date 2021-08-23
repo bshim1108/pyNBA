@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-import time
-from nba_api.stats.endpoints import SynergyPlayTypes
 from pyNBA.Models.constants import PLAY_TYPES
 from pyNBA.Models.features import FeatureCreation
 from pyNBA.Data.helpers import Helpers
@@ -12,7 +10,7 @@ class PointsPerPossession(object):
         helpers = Helpers()
 
         relevant_seasons = boxscores.loc[
-                    (boxscores['DATE'] >= start_date) & 
+                    (boxscores['DATE'] >= start_date) &
                     (boxscores['DATE'] <= end_date)
                     ]['SEASON'].unique()
         boxscores = boxscores.loc[boxscores['SEASON'].isin(relevant_seasons)]
@@ -54,7 +52,7 @@ class PointsPerPossession(object):
                 player_data = helpers.get_play_type_breakdown(play_type, season, 'player')
 
                 player_data['SEASON'] = season
-                player_data['PLAYER_ID'] = player_data['PLAYER_ID'].apply(lambda x: str(x))
+                player_data['PLAYER_ID'] = player_data['PLAYER_ID'].astype(str)
                 player_data = player_data.rename(columns={
                     'TEAM_ABBREVIATION': 'TEAM', 'PLAYER_ID': 'PLAYERID',
                     'PPP': '{}_PPP'.format(play_type), 'POSS_PCT': '{}_POSS_PCT'.format(play_type)

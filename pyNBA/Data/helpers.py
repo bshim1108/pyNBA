@@ -254,9 +254,7 @@ class Helpers(object):
         return name
 
     def get_player_data(self, lineup):
-        player_data = pd.DataFrame(columns=[
-            'NAME', 'START', 'PLAYERSTATUS'
-        ])
+        player_data = pd.DataFrame(columns=['NAME', 'START', 'PLAYERSTATUS', 'PLAYERCHANCE'])
 
         players_added = {}
         lineup_status = ''

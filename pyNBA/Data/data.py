@@ -1,19 +1,24 @@
+import json
+import time
+import requests
+import pandas as pd
+from functools import reduce
+from bs4 import BeautifulSoup
+from collections import Counter
+from datetime import datetime, timedelta
+from pyNBA.Data.sql import SQL
+from pyNBA.Data.helpers import Helpers
 from nba_api.stats.endpoints import (LeagueGameFinder, CommonPlayerInfo, ShotChartDetail, BoxScoreTraditionalV2,
                                      BoxScoreAdvancedV2, BoxScoreMiscV2, BoxScoreScoringV2, LeagueDashPlayerBioStats,
                                      PlayerDashboardByGameSplits)
-from pyNBA.Data.sql import SQL
-from datetime import datetime, timedelta
-from functools import reduce
-import pandas as pd
-from collections import Counter
-import time
-import requests
-from bs4 import BeautifulSoup
-from pyNBA.Data.constants import (INCOMPLETE_SEASONS, TRADITIONAL_BOXSCORE_COLUMNS, ADVANCED_BOXSCORE_COLUMNS,
+from pyNBA.Data.constants import (SEASONS, TRADITIONAL_BOXSCORE_COLUMNS, ADVANCED_BOXSCORE_COLUMNS,
                                   MISC_BOXSCORE_COLUMNS, SCORING_BOXSCORE_COLUMNS, TEAM_NAME_TO_ABBREVIATION,
                                   ABBREVIATION_TO_SITE, ID_TO_SITE, MIN_CONTEST_DATE, BAD_CONTEST_DATES,
-                                  POSSIBLE_POSITIONS, BAD_CONTEST_IDS, BAD_OWNERSHIP_KEYS, SEASON_TYPES)
-from pyNBA.Data.helpers import Helpers
+                                  POSSIBLE_POSITIONS, BAD_CONTEST_IDS, BAD_OWNERSHIP_KEYS, SEASON_TYPES,
+                                  DAILY_FANTASY_FUEL_START_DATE, DAILY_FANTASY_FUEL_SITES,
+                                  DAILY_FANTASY_FUEL_BAD_DATES, ROTOWIRE_START_DATE, BAD_ROTOGURU_DATES,
+                                  LINESTARAPP_SITEID_TO_SITE, LINESTARAPP_MIN_PID, LINESTARAPP_INVALID_PID_RANGE,
+                                  LINESTARAPP_INVALID_PID_VALUES, LINESTARAPP_MIN_DEF_PID)
 
 class UpdateData(object):
     def __init__(self, sql):
@@ -25,8 +30,7 @@ class UpdateData(object):
         sql_data = self.sql.select_data(query)
         sql_ids = list(sql_data['ID'].unique())
 
-        INCOMPLETE_SEASONS.sort(reverse=True)
-        for season in INCOMPLETE_SEASONS:
+        for season in SEASONS:
             for season_type in SEASON_TYPES:
                 games = LeagueGameFinder(
                     league_id_nullable='00', season_nullable=season, season_type_nullable=season_type
@@ -49,16 +53,18 @@ class UpdateData(object):
                     self.sql.insert_game(game)
 
     def update_player_data(self):
-        query = """SELECT * FROM PLAYERS"""
-        sql_data = self.sql.select_data(query)
-        sql_ids = list(sql_data['ID'].unique())
-
-        INCOMPLETE_SEASONS.sort(reverse=True)
-        for season in INCOMPLETE_SEASONS:
+        for season in SEASONS:
+            print(season)
             player_bios = LeagueDashPlayerBioStats(season=season).get_data_frames()[0].fillna('')
             time.sleep(1.000)
+
+            query = """SELECT * FROM PLAYERS"""
+            sql_data = self.sql.select_data(query)
+            sql_ids = list(sql_data['ID'].unique())
+            sql_ids = [int(i) for i in sql_ids]
             uninserted_players = player_bios.loc[~player_bios['PLAYER_ID'].isin(sql_ids)]
             for player_id, player in uninserted_players.groupby('PLAYER_ID'):
+                print(player_id)
                 player = player.iloc[0]
 
                 player_id = str(player_id)
@@ -200,6 +206,10 @@ class UpdateData(object):
                 self.sql.insert_shotchartdetail(t)
 
     def update_odds_data(self, game_dates):
+        headers = {
+            'User-Agent': 'My User Agent 1.0'
+        }
+
         query = """SELECT * FROM ODDS"""
         sql_data = self.sql.select_data(query)
         sql_dates = set(sql_data['DATE'].unique())
@@ -210,7 +220,7 @@ class UpdateData(object):
 
             formatted_date = date.replace('-', '')
             URL = 'https://www.sportsbookreview.com/betting-odds/nba-basketball/money-line/?date=' + formatted_date
-            page = requests.get(URL)
+            page = requests.get(URL, headers=headers)
             time.sleep(1.000)
             soup = BeautifulSoup(page.content, 'html.parser')
 
@@ -219,7 +229,7 @@ class UpdateData(object):
                 href = result['href']
                 URL = 'https://www.sportsbookreview.com' + href
 
-                page = requests.get(URL)
+                page = requests.get(URL, headers=headers)
                 time.sleep(1.000)
                 soup = BeautifulSoup(page.content, 'html.parser')
                 print(URL + '...')
@@ -322,8 +332,12 @@ class UpdateData(object):
         sql_data = self.sql.select_data(query)
         sql_dates = set(sql_data['DATE'].unique())
 
-        uninserted_game_dates = game_dates - sql_dates
+        uninserted_game_dates = list(game_dates - sql_dates)
+        uninserted_game_dates.sort()
         for date in uninserted_game_dates:
+            if date in BAD_ROTOGURU_DATES:
+                continue
+            print(date)
             temp = []
             for site_abbreviation in ABBREVIATION_TO_SITE:
                 date_list = date.split('-')
@@ -369,10 +383,12 @@ class UpdateData(object):
         uninserted_game_dates = [i for i in uninserted_game_dates if i >= MIN_CONTEST_DATE]
         uninserted_game_dates.sort()
         for date in uninserted_game_dates:
+            print(date)
             temp = []
 
             formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%m/%d/%y')
             SLATES_URL = 'https://resultsdb-api.rotogrinders.com/api/slates?start={}&lean=True'.format(formatted_date)
+            print(SLATES_URL)
             slate_data = requests.get(SLATES_URL).json()
 
             for slate in slate_data:
@@ -523,11 +539,183 @@ class UpdateData(object):
             for t in temp:
                 self.sql.insert_ownership(t)
 
+    def update_daily_fantasy_fuel_data(self, game_dates):
+        query = """SELECT * FROM DAILY_FANTASY_FUEL_PROJECTIONS"""
+        sql_data = self.sql.select_data(query)
+        sql_dates = set(sql_data['DATE'].unique())
+
+        uninserted_game_dates = list(game_dates - sql_dates)
+        uninserted_game_dates.sort()
+        for date in uninserted_game_dates:
+            is_too_early = pd.to_datetime(date) < pd.to_datetime(DAILY_FANTASY_FUEL_START_DATE)
+            is_bad_date = date in DAILY_FANTASY_FUEL_BAD_DATES
+            if is_too_early or is_bad_date:
+                continue
+            print(date)
+            temp = []
+            for site in DAILY_FANTASY_FUEL_SITES:
+                URL = f'https://www.dailyfantasyfuel.com/nba/projections/{site}/{date}/'
+                res = requests.get(URL)
+                res.encoding = 'utf-8'
+                res.raise_for_status()
+                html = res.text
+
+                soup = BeautifulSoup(html, 'html.parser')
+
+                all_players = soup.find_all('tr', {'class': 'projections-listing'})
+                for player in all_players:
+                    l5_fp_min = player['data-ppg_min'] if player['data-ppg_min'] != '' else None
+                    l5_fp_avg = player['data-ppg_avg'] if player['data-ppg_avg'] != '' else None
+                    l5_fp_max = player['data-ppg_max'] if player['data-ppg_max'] != '' else None
+                    player_info = (
+                        site, date, player['data-name'], player['data-pos'], player['data-salary'],
+                        player['data-inj'] , player['data-team'], player['data-opp'],
+                        l5_fp_min, l5_fp_avg, l5_fp_max, player['data-ppg_proj'],
+                        player['data-ou'], player['data-spread'], player['data-proj_score']
+                    )
+                    temp.append(player_info)
+
+            for t in temp:
+                self.sql.insert_daily_fantasy_fuel_projections(t)
+
+    def update_rotowire_data(self, game_dates):
+        query = """SELECT * FROM ROTOWIRE_PROJECTIONS"""
+        sql_data = self.sql.select_data(query)
+        sql_dates = set(sql_data['DATE'].unique())
+
+        uninserted_game_dates = list(game_dates - sql_dates)
+        uninserted_game_dates.sort()
+        for date in uninserted_game_dates:
+            is_too_early = pd.to_datetime(date) < pd.to_datetime(ROTOWIRE_START_DATE)
+            if is_too_early:
+                continue
+            print(date)
+            temp = []
+
+            headers = {
+                'Cookie': '_dlt=1; __gads=ID=5058a19006cea8ef-22ee9863bbba0089:T=1628913231:RT=1628990961:S=ALNI_MYB4_WnqAtZNyJ8aGMxonI_Lk4e5Q; _ga=GA1.2.1290194056.1628913231; _ga_DJZM5GNYZ8=GS1.1.1628990184.4.1.1628990960.0; _gid=GA1.2.640401548.1628913231; _uetsid=3c53b7d0fcb311eb9b3b99c01437cc0a; _uetvid=3c53e940fcb311eb89bff796026097a5; _pbjs_userid_consent_data=3524755945110770; cto_bidid=YSRDFl95anJGTm5NZ0tlS0U0cWdkcUx6dHBVJTJCdHlEWDdudkVGanlHUjkyU2cyQ2xSWFlNMVMwYVdDT1VFdWNHdyUyQjNHMlg0aWxZNzVDMnl5Q3MyaFRUTTBPVnRvJTJGdGZRSm84SHNpSFZ5S243WjBPc2JJNlljY2h2cWs3cjRZSlpGZGxxaA; cto_bundle=o80dIF85ZHhDWFZTSkk1Y0JVbUlMeTRPcG5zeiUyRjlmdHRWeVQ5NXdCSktNNkNtVnBWNzdxVVdudCUyRjlLVWhUSVBodW1tZVFkYyUyQlVSNzhnSkM4Y2FscEV6NVBFSW5oMmxsTnd3R2JZTXNsMTl3cEkzOW53UW1QRzQ5aGkyWTA0V3dmeWhBMFExdUxFN1Y1YkNOaVd6Z1lzbUN5JTJGbmZYUGI0RVJ6V3IxMWFDbzUyb1I1byUzRA; _dlt=1; _dc_gtm_UA-3226863-14=1; PHPSESSID=cf11b6b937dbc6d592ffc245efafac36; _dc_gtm_UA-3226863-1=1; _dc_gtm_UA-3226863-15=1; used_site_rw=nba-main%7C; used_site_rw_exp=1629010800; rwnav_NBA=Fantasy; _fbp=fb.1.1628990839537.931434173; RW_orderTotal=6.99; _lr_env_src_ats=false; _lr_retry_request=true; amplitude_id_c2c7a484a98d5a16340469d0baf32aefrotowire.com=eyJkZXZpY2VJZCI6Ijc1YTllYTgyLTMzOTgtNGE0OS05MmVjLTQ0NmQ4NGJjZTM5MVIiLCJ1c2VySWQiOm51bGwsIm9wdE91dCI6ZmFsc2UsInNlc3Npb25JZCI6MTYyODkxMzIzMDY4OSwibGFzdEV2ZW50VGltZSI6MTYyODkxMzI1NTQ3MywiZXZlbnRJZCI6MCwiaWRlbnRpZnlJZCI6MCwic2VxdWVuY2VOdW1iZXIiOjB9; cookie=%7B%22id%22%3A%2201FD1CPZZ6D92SK3ETQ3DSZFZF%22%2C%22ts%22%3A1628913238025%7D; _cc_id=2539301c81022d5781327f28f88677a0; panoramaId=19b756db47061e5e03da805262c04945a702c73d15a1c4eeea3e3b2a141a73c5; panoramaId_expiry=1629518037798; continent_code_found=NA; __qca=P0-163425031-1628913231594; _pubcid=6c347133-e0d8-4cd2-973e-384dfd065bd1; _fssid=ac82adaf-7b46-452f-8c6c-83c369bbb7cb; _gcl_au=1.1.194063521.1628913230; fsbotchecked=true'
+            }
+                
+            URL = f'https://www.rotowire.com/basketball/tables/projections.php?type=daily&pos=ALL&date={date}'
+            players = requests.get(URL, headers=headers).json()
+            for player in players:
+                player_info = (
+                    date, player['player'], player['team'], player['pos'], player['G'],
+                    player['DBLDBL'] , player['TRPDBL'], player['THREEPA'],
+                    player['THREEPM'] , player['THREEPPCT'], player['AST'],
+                    player['BLK'] , player['DREB'], player['FGPCT'],
+                    player['FGA'] , player['FGM'], player['FTPCT'],
+                    player['FTA'] , player['FTM'], player['MIN'],
+                    player['OREB'] , player['PF'], player['PTS'],
+                    player['REB'] , player['STL'], player['TO'],
+                )
+                temp.append(player_info)
+
+            for t in temp:
+                self.sql.insert_rotowire_projections(t)
+
+    def update_linestarapp_data(self):
+        query = """SELECT * FROM LINESTARAPP_DATA"""
+        sql_data = self.sql.select_data(query)
+
+        if sql_data.empty:
+            period_id = LINESTARAPP_MIN_PID
+        else:
+            period_id = int(sql_data['PID'].max()) + 1
+
+        while True:
+            print(period_id)
+            pid_in_invalid_range = period_id >= LINESTARAPP_INVALID_PID_RANGE[0] \
+                and period_id <= LINESTARAPP_INVALID_PID_RANGE[1]
+            pid_in_invalid_values = period_id in LINESTARAPP_INVALID_PID_VALUES
+            if pid_in_invalid_range or pid_in_invalid_values:
+                period_id += 1
+                continue
+
+            temp = []
+
+            site_to_data = {}
+            for site_id in LINESTARAPP_SITEID_TO_SITE:
+                URL = (
+                    'https://www.linestarapp.com/DesktopModules/DailyFantasyApi/API/Fantasy/GetSalariesV5?'
+                    f'sport=2&site={site_id}&periodId={period_id}'
+                )
+                site_to_data[site_id] = requests.get(URL).json()
+                if site_to_data[site_id]['SalaryContainerJson'] is None:
+                    return
+
+            for site_id in LINESTARAPP_SITEID_TO_SITE:
+                data = site_to_data[site_id]
+                games = json.loads(data['SalaryContainerJson'])['Games']
+                salaries = json.loads(data['SalaryContainerJson'])['Salaries']
+
+                player_id_to_data = {}
+                if period_id >= LINESTARAPP_MIN_DEF_PID:
+                    for i in range(11):
+                        player_matchups = data['MatchupData'][i]['PlayerMatchups']
+                        for player in player_matchups:
+                            player_id = player['PlayerId']
+                            if player_id not in player_id_to_data:
+                                player_id_to_data[player_id] = {}
+                            if i in [0, 1]:
+                                player_id_to_data[player_id]['START'] = 1
+                            elif i in [2, 3]:
+                                player_id_to_data[player_id]['START'] = 0
+                            elif i in [4, 5, 6, 7, 8]:
+                                player_id_to_data[player_id]['START'] = 1
+                                def_rank = int(player['Values'][6])
+                                player_id_to_data[player_id]['OPPRANK_DvP_L20'] = def_rank
+                            elif i == 9:
+                                player_id_to_data[player_id]['START'] = 0
+                                def_rank = int(player['Values'][6])
+                                player_id_to_data[player_id]['OPPRANK_DvP_L20'] = def_rank
+                            else:
+                                def_rank = int(player['Values'][7])
+                                player_id_to_data[player_id]['OPPRANK_D_L20'] = def_rank
+
+                site = LINESTARAPP_SITEID_TO_SITE[site_id]
+
+                team_to_odds = {}
+                for game in games:
+                    if game['VegasOverUnder'] != 0:
+                        team_to_odds[game['AwayTeam']] = {}
+                        team_to_odds[game['AwayTeam']]['Spread'] = game['VegasLineAway']
+                        team_to_odds[game['AwayTeam']]['OverUnder'] = game['VegasOverUnder']
+                        team_to_odds[game['HomeTeam']] = {}
+                        team_to_odds[game['HomeTeam']]['Spread'] = game['VegasLineHome']
+                        team_to_odds[game['HomeTeam']]['OverUnder'] = game['VegasOverUnder']
+
+                for salary in salaries:
+                    s = salary['GT']
+                    date = pd.to_datetime(s[s.find("(")+1:s.find("-")], unit='ms')
+                    date = date.tz_localize('UTC').tz_convert('EST').strftime("%Y-%m-%d")
+                    player_id = salary['PID']
+                    if player_id not in player_id_to_data:
+                        start, def_vs_pos, def_overall = None, None, None
+                    else:
+                        player_data = player_id_to_data[player_id]
+                        start = player_data['START'] if 'START' in player_data else None
+                        def_vs_pos = player_data['OPPRANK_DvP_L20'] if 'OPPRANK_DvP_L20' in player_data else None
+                        def_overall = player_data['OPPRANK_D_L20'] if 'OPPRANK_D_L20' in player_data else None
+                    team = salary['PTEAM']
+                    spread = team_to_odds[team]['Spread'] if team in team_to_odds else None
+                    total = team_to_odds[team]['OverUnder'] if team in team_to_odds else None
+                    player = (
+                        int(period_id), date, site, player_id, salary['Name'], start, salary['POS'],
+                        team, def_vs_pos, def_overall, salary['SAL'], salary['PP'], salary['PS'],
+                        spread, total
+                    )
+                    temp.append(player)
+
+            for t in temp:
+                self.sql.insert_linestarapp_data(t)
+            period_id += 1
 
 class QueryData(object):
     def __init__(self, update=False):
         self.sql = SQL()
         self.sql.create_connection()
+        self.sql.create_tables()
         self.update = update
         self.update_data = UpdateData(sql=self.sql)
 
@@ -560,7 +748,9 @@ class QueryData(object):
         sql_data = self.sql.select_data(query)
 
         game_data = self.query_game_data()
+        player_data = self.query_player_data()
         sql_data = sql_data.merge(game_data, left_on='GAMEID', right_on='ID', how='left')
+        sql_data = sql_data.merge(player_data, left_on='PLAYERID', right_on='ID', how='left')
         return sql_data
 
     def query_shotchartdetail_data(self):
@@ -596,6 +786,7 @@ class QueryData(object):
     def query_salary_data(self):
         if self.update:
             game_data = self.query_game_data()
+            game_data = game_data.loc[game_data['SEASONTYPE'] == 'Regular Season']
             game_dates = set(game_data['DATE'].unique())
             self.update_data.update_salary_data(game_dates)
         query = """SELECT * FROM SALARIES"""
@@ -605,6 +796,7 @@ class QueryData(object):
     def query_contest_data(self):
         if self.update:
             game_data = self.query_game_data()
+            game_data = game_data.loc[game_data['SEASONTYPE'] == 'Regular Season']
             game_dates = set(game_data['DATE'].unique())
             self.update_data.update_contest_data(game_dates)
         query = """SELECT * FROM CONTESTS"""
@@ -626,5 +818,32 @@ class QueryData(object):
             slate_ids = set(contest_data['SLATEID'].unique())
             self.update_data.update_ownership_data(slate_ids)
         query = """SELECT * FROM OWNERSHIP"""
+        sql_data = self.sql.select_data(query)
+        return sql_data
+
+    def query_daily_fantasy_fuel_data(self):
+        if self.update:
+            game_data = self.query_game_data()
+            game_data = game_data.loc[game_data['SEASONTYPE'] == 'Regular Season']
+            game_dates = set(game_data['DATE'].unique())
+            self.update_data.update_daily_fantasy_fuel_data(game_dates)
+        query = """SELECT * FROM DAILY_FANTASY_FUEL_PROJECTIONS"""
+        sql_data = self.sql.select_data(query)
+        return sql_data
+
+    def query_rotowire_data(self):
+        if self.update:
+            game_data = self.query_game_data()
+            game_data = game_data.loc[game_data['SEASONTYPE'] == 'Regular Season']
+            game_dates = set(game_data['DATE'].unique())
+            self.update_data.update_rotowire_data(game_dates)
+        query = """SELECT * FROM ROTOWIRE_PROJECTIONS"""
+        sql_data = self.sql.select_data(query)
+        return sql_data
+
+    def query_linestarapp_data(self):
+        if self.update:
+            self.update_data.update_linestarapp_data()
+        query = """SELECT * FROM LINESTARAPP_DATA"""
         sql_data = self.sql.select_data(query)
         return sql_data

@@ -25,7 +25,8 @@ class ReboundsPerPossession(object):
 
         opp_team_boxscores = team_boxscores.drop(columns='OPP_TEAM')
         opp_team_boxscores = opp_team_boxscores.rename(columns={
-            'TEAM': 'OPP_TEAM', 'TEAM_POSSESSIONS': 'OPP_TEAM_POSSESSIONS', 'TEAM_OREB': 'OPP_TEAM_OREB', 'TEAM_DREB': 'OPP_TEAM_DREB'
+            'TEAM': 'OPP_TEAM', 'TEAM_POSSESSIONS': 'OPP_TEAM_POSSESSIONS', 'TEAM_OREB': 'OPP_TEAM_OREB',
+            'TEAM_DREB': 'OPP_TEAM_DREB'
             })
         team_boxscores = team_boxscores.merge(opp_team_boxscores, on=['SEASON', 'DATE', 'OPP_TEAM'], how='left')
 

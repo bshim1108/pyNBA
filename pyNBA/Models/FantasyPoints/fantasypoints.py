@@ -83,15 +83,15 @@ class FPModel(object):
 
         if self.site == Site.DRAFTKINGS:
             predictions['FPPS_HAT'] = predictions.apply(
-                lambda x: self.FPCalculator.calculate_fantasy_points(
-                    x['SEASON'], x['PPS_HAT'], x['RPS_HAT'], x['APS_HAT'],
+                lambda x: self.FPCalculator.calculate_draftkings_fp(
+                    x['PPS_HAT'], x['RPS_HAT'], x['APS_HAT'],
                     x['TPS_HAT'], x['BPS_HAT'], x['SPS_HAT'], x['MTPS_HAT']
                 ),
                 axis=1
             )
         else:
             predictions['FPPS_HAT'] = predictions.apply(
-                lambda x: self.FPCalculator.calculate_fantasy_points(
+                lambda x: self.FPCalculator.calculate_fanduel_fp(
                     x['SEASON'], x['PPS_HAT'], x['RPS_HAT'], x['APS_HAT'],
                     x['TPS_HAT'], x['BPS_HAT'], x['SPS_HAT']
                 ),
