@@ -1,0 +1,137 @@
+Entry ID,Contest Name,Contest ID,Entry Fee,PG,SG,SF,PF,C,G,F,UTIL,,Instructions
+2881384688,NBA FREE 200-Player,115281083,$0,Kemba Walker (19608442),Evan Fournier (19608476),Kyle Kuzma (19608486),Scottie Barnes (19608451),John Collins (19608445),Lou Williams (19608468),OG Anunoby (19608461),Gorgui Dieng (19608492),,1. Column A lists all of your contest entries for this draftgroup
+,,,,,,,,,,,,,2. Your current lineup is listed next to each entry (blank for reservations)
+,,,,,,,,,,,,,3. You can change the lineup for an entry by entering the IDs of the players in the row next to that entry
+,,,,,,,,,,,,,4. Use data from the Name+ID column or the ID column; you cannot use just the player's name
+,,,,,,,,,,,,,5. For faster processing only include entries you are changing in the file you upload
+,,,,,,,,,,,,,
+,,,,,,,,,,,,,Position,Name + ID,Name,ID,Roster Position,Salary,Game Info,TeamAbbrev,AvgPointsPerGame
+,,,,,,,,,,,,,PF,Julius Randle (19608409),Julius Randle,19608409,PF/F/UTIL,9200,NYK@WAS 10/09/2021 07:00PM ET,NYK,48.16
+,,,,,,,,,,,,,PF,Jayson Tatum (19608412),Jayson Tatum,19608412,PF/F/UTIL,8800,TOR@BOS 10/09/2021 07:00PM ET,BOS,46.68
+,,,,,,,,,,,,,PG/SG,Bradley Beal (19608415),Bradley Beal,19608415,PG/SG/G/UTIL,8700,NYK@WAS 10/09/2021 07:00PM ET,WAS,46.31
+,,,,,,,,,,,,,PG,Ja Morant (19608419),Ja Morant,19608419,PG/G/UTIL,8400,ATL@MEM 10/09/2021 08:00PM ET,MEM,37.98
+,,,,,,,,,,,,,PG,Trae Young (19608422),Trae Young,19608422,PG/G/UTIL,8000,ATL@MEM 10/09/2021 08:00PM ET,ATL,46.69
+,,,,,,,,,,,,,C,Clint Capela (19608425),Clint Capela,19608425,C/UTIL,7600,ATL@MEM 10/09/2021 08:00PM ET,ATL,37.83
+,,,,,,,,,,,,,SG/SF,Jaylen Brown (19608427),Jaylen Brown,19608427,SG/SF/F/G/UTIL,7500,TOR@BOS 10/09/2021 07:00PM ET,BOS,41.06
+,,,,,,,,,,,,,PG/SG,Bogdan Bogdanovic (19608432),Bogdan Bogdanovic,19608432,PG/SG/G/UTIL,7300,ATL@MEM 10/09/2021 08:00PM ET,ATL,29.25
+,,,,,,,,,,,,,SF,RJ Barrett (19608436),RJ Barrett,19608436,SF/F/UTIL,7300,NYK@WAS 10/09/2021 07:00PM ET,NYK,31.29
+,,,,,,,,,,,,,PF,Pascal Siakam (19608439),Pascal Siakam,19608439,PF/F/UTIL,7200,TOR@BOS 10/09/2021 07:00PM ET,TOR,40.59
+,,,,,,,,,,,,,PG,Kemba Walker (19608442),Kemba Walker,19608442,PG/G/UTIL,6900,NYK@WAS 10/09/2021 07:00PM ET,NYK,34.43
+,,,,,,,,,,,,,PF/C,John Collins (19608445),John Collins,19608445,PF/C/F/UTIL,6800,ATL@MEM 10/09/2021 08:00PM ET,ATL,31.40
+,,,,,,,,,,,,,C,Steven Adams (19608449),Steven Adams,19608449,C/UTIL,6700,ATL@MEM 10/09/2021 08:00PM ET,MEM,24.39
+,,,,,,,,,,,,,SF/PF,Scottie Barnes (19608451),Scottie Barnes,19608451,SF/PF/F/UTIL,6600,TOR@BOS 10/09/2021 07:00PM ET,TOR,0
+,,,,,,,,,,,,,PG,Fred VanVleet (19608455),Fred VanVleet,19608455,PG/G/UTIL,6400,TOR@BOS 10/09/2021 07:00PM ET,TOR,40.02
+,,,,,,,,,,,,,PG,Spencer Dinwiddie (19608458),Spencer Dinwiddie,19608458,PG/G/UTIL,6300,NYK@WAS 10/09/2021 07:00PM ET,WAS,18.08
+,,,,,,,,,,,,,SF,OG Anunoby (19608461),OG Anunoby,19608461,SF/F/UTIL,6200,TOR@BOS 10/09/2021 07:00PM ET,TOR,31.01
+,,,,,,,,,,,,,PF/C,Jaren Jackson Jr. (19608464),Jaren Jackson Jr.,19608464,PF/C/F/UTIL,6100,ATL@MEM 10/09/2021 08:00PM ET,MEM,27.31
+,,,,,,,,,,,,,PG/SG,Lou Williams (19608468),Lou Williams,19608468,PG/SG/G/UTIL,6000,ATL@MEM 10/09/2021 08:00PM ET,ATL,19.05
+,,,,,,,,,,,,,PF/C,Thomas Bryant (19608472),Thomas Bryant,19608472,PF/C/F/UTIL,6000,NYK@WAS 10/09/2021 07:00PM ET,WAS,26.62
+,,,,,,,,,,,,,SG/SF,Evan Fournier (19608476),Evan Fournier,19608476,SG/SF/F/G/UTIL,5900,NYK@WAS 10/09/2021 07:00PM ET,NYK,29.14
+,,,,,,,,,,,,,PF,Danilo Gallinari (19608481),Danilo Gallinari,19608481,PF/F/UTIL,5800,ATL@MEM 10/09/2021 08:00PM ET,ATL,22.23
+,,,,,,,,,,,,,C,Daniel Gafford (19608484),Daniel Gafford,19608484,C/UTIL,5800,NYK@WAS 10/09/2021 07:00PM ET,WAS,17.90
+,,,,,,,,,,,,,SF/PF,Kyle Kuzma (19608486),Kyle Kuzma,19608486,SF/PF/F/UTIL,5700,NYK@WAS 10/09/2021 07:00PM ET,WAS,25
+,,,,,,,,,,,,,C,Montrezl Harrell (19608490),Montrezl Harrell,19608490,C/UTIL,5700,NYK@WAS 10/09/2021 07:00PM ET,WAS,24.17
+,,,,,,,,,,,,,C,Gorgui Dieng (19608492),Gorgui Dieng,19608492,C/UTIL,5600,ATL@MEM 10/09/2021 08:00PM ET,ATL,15.41
+,,,,,,,,,,,,,PG,Luca Vildoza (19608494),Luca Vildoza,19608494,PG/G/UTIL,5600,NYK@WAS 10/09/2021 07:00PM ET,NYK,0
+,,,,,,,,,,,,,C,Chris Boucher (19608500),Chris Boucher,19608500,C/UTIL,5500,TOR@BOS 10/09/2021 07:00PM ET,TOR,29.16
+,,,,,,,,,,,,,PG,Immanuel Quickley (19608497),Immanuel Quickley,19608497,PG/G/UTIL,5500,NYK@WAS 10/09/2021 07:00PM ET,NYK,18.22
+,,,,,,,,,,,,,PF/C,Rui Hachimura (19608502),Rui Hachimura,19608502,PF/C/F/UTIL,5500,NYK@WAS 10/09/2021 07:00PM ET,WAS,24.56
+,,,,,,,,,,,,,C,Khem Birch (19608506),Khem Birch,19608506,C/UTIL,5400,TOR@BOS 10/09/2021 07:00PM ET,TOR,19.24
+,,,,,,,,,,,,,C,Nerlens Noel (19608508),Nerlens Noel,19608508,C/UTIL,5400,NYK@WAS 10/09/2021 07:00PM ET,NYK,19.65
+,,,,,,,,,,,,,SG,Kentavious Caldwell-Pope (19608510),Kentavious Caldwell-Pope,19608510,SG/G/UTIL,5400,NYK@WAS 10/09/2021 07:00PM ET,WAS,18.68
+,,,,,,,,,,,,,PG,Payton Pritchard (19608526),Payton Pritchard,19608526,PG/G/UTIL,5300,TOR@BOS 10/09/2021 07:00PM ET,BOS,14.66
+,,,,,,,,,,,,,SG/SF,Kevin Huerter (19608513),Kevin Huerter,19608513,SG/SF/F/G/UTIL,5300,ATL@MEM 10/09/2021 08:00PM ET,ATL,24.57
+,,,,,,,,,,,,,SG/SF,Ziaire Williams (19608518),Ziaire Williams,19608518,SG/SF/F/G/UTIL,5300,ATL@MEM 10/09/2021 08:00PM ET,MEM,0
+,,,,,,,,,,,,,PF,Obi Toppin (19608523),Obi Toppin,19608523,PF/F/UTIL,5300,NYK@WAS 10/09/2021 07:00PM ET,NYK,8.77
+,,,,,,,,,,,,,PG/SG,Marcus Smart (19608535),Marcus Smart,19608535,PG/SG/G/UTIL,5200,TOR@BOS 10/09/2021 07:00PM ET,BOS,30.24
+,,,,,,,,,,,,,PF/C,Onyeka Okongwu (19608529),Onyeka Okongwu,19608529,PF/C/F/UTIL,5200,ATL@MEM 10/09/2021 08:00PM ET,ATL,10.36
+,,,,,,,,,,,,,C,Marc Gasol (19608533),Marc Gasol,19608533,C/UTIL,5200,ATL@MEM 10/09/2021 08:00PM ET,MEM,16.68
+,,,,,,,,,,,,,PF/C,Taj Gibson (19608539),Taj Gibson,19608539,PF/C/F/UTIL,5200,NYK@WAS 10/09/2021 07:00PM ET,NYK,17.14
+,,,,,,,,,,,,,SG/SF,Cam Reddish (19608543),Cam Reddish,19608543,SG/SF/F/G/UTIL,5100,ATL@MEM 10/09/2021 08:00PM ET,ATL,21.83
+,,,,,,,,,,,,,SG,Dillon Brooks (19608548),Dillon Brooks,19608548,SG/G/UTIL,5100,ATL@MEM 10/09/2021 08:00PM ET,MEM,28.39
+,,,,,,,,,,,,,C,Mitchell Robinson (19608551),Mitchell Robinson,19608551,C/UTIL,5100,NYK@WAS 10/09/2021 07:00PM ET,NYK,24.23
+,,,,,,,,,,,,,SG/SF,Corey Kispert (19608553),Corey Kispert,19608553,SG/SF/F/G/UTIL,5100,NYK@WAS 10/09/2021 07:00PM ET,WAS,0
+,,,,,,,,,,,,,PG,Dennis Schroder (19608571),Dennis Schroder,19608571,PG/G/UTIL,5000,TOR@BOS 10/09/2021 07:00PM ET,BOS,29.91
+,,,,,,,,,,,,,SF,De'Andre Hunter (19608558),De'Andre Hunter,19608558,SF/F/UTIL,5000,ATL@MEM 10/09/2021 08:00PM ET,ATL,25.11
+,,,,,,,,,,,,,SF,Sean McDermott (19608561),Sean McDermott,19608561,SF/F/UTIL,5000,ATL@MEM 10/09/2021 08:00PM ET,MEM,4.40
+,,,,,,,,,,,,,PG/SG,Derrick Rose (19608564),Derrick Rose,19608564,PG/SG/G/UTIL,5000,NYK@WAS 10/09/2021 07:00PM ET,NYK,27.26
+,,,,,,,,,,,,,PG,Cassius Winston (19608568),Cassius Winston,19608568,PG/G/UTIL,5000,NYK@WAS 10/09/2021 07:00PM ET,WAS,3.59
+,,,,,,,,,,,,,PF/C,Precious Achiuwa (19608582),Precious Achiuwa,19608582,PF/C/F/UTIL,4900,TOR@BOS 10/09/2021 07:00PM ET,TOR,10.98
+,,,,,,,,,,,,,PG/SG,AJ Lawson (19608574),AJ Lawson,19608574,PG/SG/G/UTIL,4900,ATL@MEM 10/09/2021 08:00PM ET,ATL,0
+,,,,,,,,,,,,,PF/C,Killian Tillie (19608578),Killian Tillie,19608578,PF/C/F/UTIL,4900,ATL@MEM 10/09/2021 08:00PM ET,MEM,7.17
+,,,,,,,,,,,,,C,Aron Baynes (19608593),Aron Baynes,19608593,C/UTIL,4800,TOR@BOS 10/09/2021 07:00PM ET,TOR,15.23
+,,,,,,,,,,,,,C,Robert Williams (19608603),Robert Williams,19608603,C/UTIL,4800,TOR@BOS 10/09/2021 07:00PM ET,BOS,23.72
+,,,,,,,,,,,,,PG,Delon Wright (19608586),Delon Wright,19608586,PG/G/UTIL,4800,ATL@MEM 10/09/2021 08:00PM ET,ATL,26.27
+,,,,,,,,,,,,,SF/PF,Kyle Anderson (19608589),Kyle Anderson,19608589,SF/PF/F/UTIL,4800,ATL@MEM 10/09/2021 08:00PM ET,MEM,29.00
+,,,,,,,,,,,,,SF/PF,Davis Bertans (19608595),Davis Bertans,19608595,SF/PF/F/UTIL,4800,NYK@WAS 10/09/2021 07:00PM ET,WAS,18.68
+,,,,,,,,,,,,,SF/PF,Deni Avdija (19608599),Deni Avdija,19608599,SF/PF/F/UTIL,4800,NYK@WAS 10/09/2021 07:00PM ET,WAS,16.12
+,,,,,,,,,,,,,PG/SG,Goran Dragic (19608612),Goran Dragic,19608612,PG/SG/G/UTIL,4700,TOR@BOS 10/09/2021 07:00PM ET,TOR,25.64
+,,,,,,,,,,,,,PF/C,Al Horford (19608616),Al Horford,19608616,PF/C/F/UTIL,4700,TOR@BOS 10/09/2021 07:00PM ET,BOS,31.82
+,,,,,,,,,,,,,PG,Sharife Cooper (19608605),Sharife Cooper,19608605,PG/G/UTIL,4700,ATL@MEM 10/09/2021 08:00PM ET,ATL,0
+,,,,,,,,,,,,,PG/SG,De'Anthony Melton (19608608),De'Anthony Melton,19608608,PG/SG/G/UTIL,4700,ATL@MEM 10/09/2021 08:00PM ET,MEM,19.48
+,,,,,,,,,,,,,C,Jericho Sims (19608644),Jericho Sims,19608644,C/UTIL,4700,NYK@WAS 10/09/2021 07:00PM ET,NYK,0
+,,,,,,,,,,,,,SG/SF,Gary Trent Jr. (19608627),Gary Trent Jr.,19608627,SG/SF/F/G/UTIL,4600,TOR@BOS 10/09/2021 07:00PM ET,TOR,23.98
+,,,,,,,,,,,,,SF,Aaron Nesmith (19608635),Aaron Nesmith,19608635,SF/F/UTIL,4600,TOR@BOS 10/09/2021 07:00PM ET,BOS,9.95
+,,,,,,,,,,,,,SF/PF,Jalen Johnson (19608620),Jalen Johnson,19608620,SF/PF/F/UTIL,4600,ATL@MEM 10/09/2021 08:00PM ET,ATL,0
+,,,,,,,,,,,,,SF,Desmond Bane (19608624),Desmond Bane,19608624,SF/F/UTIL,4600,ATL@MEM 10/09/2021 08:00PM ET,MEM,17.57
+,,,,,,,,,,,,,PG,Aaron Holiday (19608632),Aaron Holiday,19608632,PG/G/UTIL,4600,NYK@WAS 10/09/2021 07:00PM ET,WAS,13.47
+,,,,,,,,,,,,,SG/SF,Alec Burks (19608665),Alec Burks,19608665,SG/SF/F/G/UTIL,4600,NYK@WAS 10/09/2021 07:00PM ET,NYK,24.32
+,,,,,,,,,,,,,SF,Justin Champagnie (19608641),Justin Champagnie,19608641,SF/F/UTIL,4500,TOR@BOS 10/09/2021 07:00PM ET,TOR,0
+,,,,,,,,,,,,,SG/SF,Romeo Langford (19608646),Romeo Langford,19608646,SG/SF/F/G/UTIL,4500,TOR@BOS 10/09/2021 07:00PM ET,BOS,9.36
+,,,,,,,,,,,,,PG,Carsen Edwards (19608638),Carsen Edwards,19608638,PG/G/UTIL,4500,ATL@MEM 10/09/2021 08:00PM ET,MEM,6.08
+,,,,,,,,,,,,,SF,Timothe Luwawu-Cabarrot (19608651),Timothe Luwawu-Cabarrot,19608651,SF/F/UTIL,4500,ATL@MEM 10/09/2021 08:00PM ET,ATL,11.47
+,,,,,,,,,,,,,PG,Miles McBride (19608680),Miles McBride,19608680,PG/G/UTIL,4500,NYK@WAS 10/09/2021 07:00PM ET,NYK,0
+,,,,,,,,,,,,,PG/SG,Malachi Flynn (19608661),Malachi Flynn,19608661,PG/SG/G/UTIL,4400,TOR@BOS 10/09/2021 07:00PM ET,TOR,17.03
+,,,,,,,,,,,,,PF,Juancho Hernangomez (19608677),Juancho Hernangomez,19608677,PF/F/UTIL,4400,TOR@BOS 10/09/2021 07:00PM ET,BOS,14.42
+,,,,,,,,,,,,,PF/C,Brandon Clarke (19608654),Brandon Clarke,19608654,PF/C/F/UTIL,4400,ATL@MEM 10/09/2021 08:00PM ET,MEM,22.75
+,,,,,,,,,,,,,SG,Sam Merrill (19608658),Sam Merrill,19608658,SG/G/UTIL,4400,ATL@MEM 10/09/2021 08:00PM ET,MEM,5.32
+,,,,,,,,,,,,,SG,Skylar Mays (19608674),Skylar Mays,19608674,SG/G/UTIL,4400,ATL@MEM 10/09/2021 08:00PM ET,ATL,6.57
+,,,,,,,,,,,,,PF/C,Isaiah Todd (19608670),Isaiah Todd,19608670,PF/C/F/UTIL,4400,NYK@WAS 10/09/2021 07:00PM ET,WAS,0
+,,,,,,,,,,,,,PF,Kevin Knox II (19608687),Kevin Knox II,19608687,PF/F/UTIL,4400,NYK@WAS 10/09/2021 07:00PM ET,NYK,7.43
+,,,,,,,,,,,,,SG/SF,Svi Mykhailiuk (19608692),Svi Mykhailiuk,19608692,SG/SF/F/G/UTIL,4300,TOR@BOS 10/09/2021 07:00PM ET,TOR,16.10
+,,,,,,,,,,,,,PF,Jabari Parker (19608697),Jabari Parker,19608697,PF/F/UTIL,4300,TOR@BOS 10/09/2021 07:00PM ET,BOS,12.28
+,,,,,,,,,,,,,PF/C,Xavier Tillman (19608683),Xavier Tillman,19608683,PF/C/F/UTIL,4300,ATL@MEM 10/09/2021 08:00PM ET,MEM,15.78
+,,,,,,,,,,,,,PG,Tyus Jones (19608700),Tyus Jones,19608700,PG/G/UTIL,4300,ATL@MEM 10/09/2021 08:00PM ET,MEM,15.47
+,,,,,,,,,,,,,C,Jay Huff (19608690),Jay Huff,19608690,C/UTIL,4300,NYK@WAS 10/09/2021 07:00PM ET,WAS,0
+,,,,,,,,,,,,,SG,Quentin Grimes (19608728),Quentin Grimes,19608728,SG/G/UTIL,4300,NYK@WAS 10/09/2021 07:00PM ET,NYK,0
+,,,,,,,,,,,,,C,Freddie Gillespie (19608703),Freddie Gillespie,19608703,C/UTIL,4200,TOR@BOS 10/09/2021 07:00PM ET,TOR,15.29
+,,,,,,,,,,,,,C,Enes Kanter (19608726),Enes Kanter,19608726,C/UTIL,4200,TOR@BOS 10/09/2021 07:00PM ET,BOS,27.65
+,,,,,,,,,,,,,SG,Shaq Buchanan (19608718),Shaq Buchanan,19608718,SG/G/UTIL,4200,ATL@MEM 10/09/2021 08:00PM ET,MEM,0
+,,,,,,,,,,,,,SG/SF,Jarrett Culver (19608721),Jarrett Culver,19608721,SG/SF/F/G/UTIL,4200,ATL@MEM 10/09/2021 08:00PM ET,MEM,11.53
+,,,,,,,,,,,,,PG/SG,Caleb Homesley (19608705),Caleb Homesley,19608705,PG/SG/G/UTIL,4200,NYK@WAS 10/09/2021 07:00PM ET,WAS,0
+,,,,,,,,,,,,,PG,Jordan Goodwin (19608712),Jordan Goodwin,19608712,PG/G/UTIL,4200,NYK@WAS 10/09/2021 07:00PM ET,WAS,0
+,,,,,,,,,,,,,SF,Dwayne Bacon (19608731),Dwayne Bacon,19608731,SF/F/UTIL,4200,NYK@WAS 10/09/2021 07:00PM ET,NYK,18.25
+,,,,,,,,,,,,,PG,Dalano Banton (19608709),Dalano Banton,19608709,PG/G/UTIL,4100,TOR@BOS 10/09/2021 07:00PM ET,TOR,0
+,,,,,,,,,,,,,PF/C,Grant Williams (19608750),Grant Williams,19608750,PF/C/F/UTIL,4100,TOR@BOS 10/09/2021 07:00PM ET,BOS,11.13
+,,,,,,,,,,,,,SG/SF,Josh Richardson (19608754),Josh Richardson,19608754,SG/SF/F/G/UTIL,4100,TOR@BOS 10/09/2021 07:00PM ET,BOS,21.52
+,,,,,,,,,,,,,PG,Kris Dunn (19608734),Kris Dunn,19608734,PG/G/UTIL,4100,ATL@MEM 10/09/2021 08:00PM ET,MEM,5.31
+,,,,,,,,,,,,,C,Santi Aldama (19608740),Santi Aldama,19608740,C/UTIL,4100,ATL@MEM 10/09/2021 08:00PM ET,MEM,0
+,,,,,,,,,,,,,C,Johnny Hamilton (19608748),Johnny Hamilton,19608748,C/UTIL,4100,ATL@MEM 10/09/2021 08:00PM ET,ATL,0
+,,,,,,,,,,,,,PF,Aamir Simms (19608737),Aamir Simms,19608737,PF/F/UTIL,4100,NYK@WAS 10/09/2021 07:00PM ET,NYK,0
+,,,,,,,,,,,,,PF,Anthony Gill (19608742),Anthony Gill,19608742,PF/F/UTIL,4100,NYK@WAS 10/09/2021 07:00PM ET,WAS,6.47
+,,,,,,,,,,,,,SG,Jordan Schakel (19608745),Jordan Schakel,19608745,SG/G/UTIL,4100,NYK@WAS 10/09/2021 07:00PM ET,WAS,0
+,,,,,,,,,,,,,PF,Yuta Watanabe (19608715),Yuta Watanabe,19608715,PF/F/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,TOR,11.50
+,,,,,,,,,,,,,PG/SG,David Johnson (19608785),David Johnson,19608785,PG/SG/G/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,TOR,0
+,,,,,,,,,,,,,C,Bruno Fernando (19608793),Bruno Fernando,19608793,C/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,BOS,4.47
+,,,,,,,,,,,,,PG,Ryan Arcidiacono (19608795),Ryan Arcidiacono,19608795,PG/G/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,BOS,7.48
+,,,,,,,,,,,,,PF,Sam Hauser (19608798),Sam Hauser,19608798,PF/F/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,BOS,0
+,,,,,,,,,,,,,PF,Reggie Perry (19608801),Reggie Perry,19608801,PF/F/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,TOR,7.64
+,,,,,,,,,,,,,PF,Juwan Morgan (19608804),Juwan Morgan,19608804,PF/F/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,BOS,3.14
+,,,,,,,,,,,,,SG,Garrison Mathews (19608807),Garrison Mathews,19608807,SG/G/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,BOS,9.01
+,,,,,,,,,,,,,SG,Theo Pinson (19608810),Theo Pinson,19608810,SG/G/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,BOS,0.54
+,,,,,,,,,,,,,SG,Juhann Begarin (19608813),Juhann Begarin,19608813,SG/G/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,BOS,0
+,,,,,,,,,,,,,SF,Sam Dekker (19608816),Sam Dekker,19608816,SF/F/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,TOR,0
+,,,,,,,,,,,,,SF,Isaac Bonga (19608819),Isaac Bonga,19608819,SF/F/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,TOR,5.29
+,,,,,,,,,,,,,SF,Ish Wainright (19608822),Ish Wainright,19608822,SF/F/UTIL,4000,TOR@BOS 10/09/2021 07:00PM ET,TOR,0
+,,,,,,,,,,,,,PG,Tim Frazier (19608768),Tim Frazier,19608768,PG/G/UTIL,4000,ATL@MEM 10/09/2021 08:00PM ET,MEM,9.2
+,,,,,,,,,,,,,PG,Brandon Goodwin (19608771),Brandon Goodwin,19608771,PG/G/UTIL,4000,ATL@MEM 10/09/2021 08:00PM ET,ATL,10.40
+,,,,,,,,,,,,,C,Jahlil Okafor (19608774),Jahlil Okafor,19608774,C/UTIL,4000,ATL@MEM 10/09/2021 08:00PM ET,ATL,9.61
+,,,,,,,,,,,,,SF/PF,Solomon Hill (19608776),Solomon Hill,19608776,SF/PF/F/UTIL,4000,ATL@MEM 10/09/2021 08:00PM ET,ATL,10.40
+,,,,,,,,,,,,,SF,Yves Pons (19608825),Yves Pons,19608825,SF/F/UTIL,4000,ATL@MEM 10/09/2021 08:00PM ET,MEM,0
+,,,,,,,,,,,,,PG/SF,John Konchar (19608828),John Konchar,19608828,PG/SF/F/G/UTIL,4000,ATL@MEM 10/09/2021 08:00PM ET,MEM,11.30
+,,,,,,,,,,,,,PG,Rokas Jokubaitis (19608759),Rokas Jokubaitis,19608759,PG/G/UTIL,4000,NYK@WAS 10/09/2021 07:00PM ET,NYK,0
+,,,,,,,,,,,,,SF,Wayne Selden Jr. (19608762),Wayne Selden Jr.,19608762,SF/F/UTIL,4000,NYK@WAS 10/09/2021 07:00PM ET,NYK,0
+,,,,,,,,,,,,,SG,M.J. Walker (19608765),M.J. Walker,19608765,SG/G/UTIL,4000,NYK@WAS 10/09/2021 07:00PM ET,NYK,0
+,,,,,,,,,,,,,SF,Aaron Sims (19608780),Aaron Sims,19608780,SF/F/UTIL,4000,NYK@WAS 10/09/2021 07:00PM ET,NYK,0
+,,,,,,,,,,,,,C,Jaime Echenique (19608783),Jaime Echenique,19608783,C/UTIL,4000,NYK@WAS 10/09/2021 07:00PM ET,WAS,0
+,,,,,,,,,,,,,PG/SG,Raul Neto (19608789),Raul Neto,19608789,PG/SG/G/UTIL,4000,NYK@WAS 10/09/2021 07:00PM ET,WAS,17.14

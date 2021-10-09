@@ -33,18 +33,19 @@ class GetData(object):
 
         boxscore_data = self.query_data.query_boxscore_data()
 
-        def _get_projection(projection_1, projection_2):
-            """Returns a projection given two projections, with favor to the first projection"""
-            if np.isnan(projection_1) and np.isnan(projection_2):
+        def _get_projection(roto_projection, linestar_projection):
+            if np.isnan(roto_projection) and np.isnan(linestar_projection):
                 return 0
-            elif np.isnan(projection_1):
-                return projection_2
-            elif np.isnan(projection_2):
-                return projection_1
-            elif projection_1 == 0 or projection_2 == 0:
+            elif np.isnan(roto_projection):
+                return linestar_projection
+            elif np.isnan(linestar_projection):
+                return roto_projection
+            elif roto_projection == 0 and linestar_projection != 0:
+                return linestar_projection
+            elif roto_projection != 0 and linestar_projection == 0:
                 return 0
             else:
-                return projection_1
+                return roto_projection
 
         linestarapp_data = linestarapp_data.loc[linestarapp_data['SITE'] == self.site]
         linestarapp_data = linestarapp_data.rename(columns={'PROJECTION': 'LINESTARAPP_PROJECTION'})
@@ -69,7 +70,8 @@ class GetData(object):
         projections = projections.loc[projections['DATE'].isin(set(boxscore_data['DATE'].unique()))]
         projections = projections[[
             'DATE', 'SITE', 'PLAYER_ID', 'PLAYER_NAME', 'POS', 'TEAM', 'START', 'SPREAD', 'TOTAL',
-            'OPPRANK_DvP_L20', 'OPPRANK_D_L20', 'PROJECTION', 'FINAL', 'COMMENT'
+            'OPPRANK_DvP_L20', 'OPPRANK_D_L20', 'LINESTARAPP_PROJECTION', 'ROTOWIRE_PROJECTION',
+            'PROJECTION', 'FINAL', 'COMMENT'
         ]]
 
         return projections
@@ -107,15 +109,26 @@ class GetData(object):
 
         return salaries
     
-    def get_ownership_data(self):
+    def get_contest_data(self, max_contest_entries=1e9, max_contest_value=1e9):
         contest_data = self.query_data.query_contest_data()
         contest_data = contest_data.loc[contest_data['SITE'] == self.site]
         contest_data = contest_data.loc[
-            (contest_data['SLATETYPE'] == 'Classic') & (contest_data['CASHLINE'] > 200) &
+            (contest_data['SLATETYPE'] == 'Classic') &
+            (contest_data['CASHLINE'] > 200) &
+            (contest_data['TOTALENTRIES'] > 100) &
+            (contest_data['ENTRYFEE'] > 0) &
             (~contest_data['CONTESTNAME'].str.lower().str.contains('|'.join(BAD_CONTEST_SUBSTRINGS)))
         ].dropna(subset=['CASHLINE'])
         contest_data['MAXROI'] = contest_data['TOPPRIZE']/contest_data['ENTRYFEE']
         contest_data = contest_data.loc[contest_data['MAXROI'] > 2]
+
+        contest_data['ENTRIES_CAP_1'] = max_contest_entries
+        contest_data['ENTRIES_CAP_2'] = (max_contest_value/contest_data['ENTRYFEE']).astype(int)
+        contest_data['MAXENTRIES'] = contest_data[['MAXENTRIES', 'ENTRIES_CAP_1', 'ENTRIES_CAP_2']].min(axis=1)
+        return contest_data
+
+    def get_ownership_data(self):
+        contest_data = self.get_contest_data()
 
         ownership_data = self.query_data.query_ownership_data()
         ownership_data['PLAYERNAME'] = ownership_data['PLAYERNAME'].apply(
@@ -166,15 +179,22 @@ class GetData(object):
         player_data = player_data.dropna(subset=['SALARY'])
         player_data = player_data.loc[
             (player_data['PROJECTION'] != 0) |
-            (player_data['COMMENT'].isnull()) |
             (player_data['COMMENT'] == '') |
             (player_data['COMMENT'].str.contains('coach', case=False))
         ]
 
         player_data = player_data[[
             'SEASON', 'DATE', 'SLATEID', 'GAMECOUNT', 'PLAYER_ID', 'PLAYER_NAME', 'TEAM', 'POS', 'SALARY',
-            'START', 'SPREAD', 'TOTAL', 'OPPRANK_DvP_L20', 'OPPRANK_D_L20', 'PROJECTION', 'FINAL', 'OWNERSHIP',
-            'COMMENT'
+            'START', 'SPREAD', 'TOTAL', 'OPPRANK_DvP_L20', 'OPPRANK_D_L20', 'LINESTARAPP_PROJECTION',
+            'ROTOWIRE_PROJECTION', 'PROJECTION', 'FINAL', 'OWNERSHIP', 'COMMENT'
         ]].sort_values(by=['DATE', 'SLATEID', 'SALARY'], ascending=[True, False, False])
 
         return player_data
+
+    def get_contest_results(self):
+        all_contest_results = self.query_data.query_contest_info_data()
+        all_contest_results['MINPOINTS'] = all_contest_results['MINPOINTS'].fillna(0)
+        contest_prizes = all_contest_results.groupby('CONTESTID')['PRIZE'].min().to_frame()
+        bad_contests = set(contest_prizes.loc[contest_prizes['PRIZE'] != 0].index.unique())
+        all_contest_results = all_contest_results.loc[~all_contest_results['CONTESTID'].isin(bad_contests)]
+        return all_contest_results

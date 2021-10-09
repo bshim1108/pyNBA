@@ -54,6 +54,38 @@ class FeatureCreation(object):
             return df
         return df.set_index(original_idx_name)
 
+    def expanding_min(self, df, group_col_names, col_name, new_col_name, min_periods=1, n_shift=1,
+                       order_idx_name='DATE'):
+        df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)
+
+        temp = self.prepare_temp(df, group_col_names, order_idx_name)
+        temp = temp.groupby(group_col_names)[col_name].expanding(min_periods=min_periods).min()
+
+        df = self.merge_stat_to_df(
+            stat_df=temp, df=df, group_col_names=group_col_names, col_name=col_name, new_col_name=new_col_name,
+            n_shift=n_shift
+            )
+
+        if original_idx_name is None:
+            return df
+        return df.set_index(original_idx_name)
+
+    def expanding_max(self, df, group_col_names, col_name, new_col_name, min_periods=1, n_shift=1,
+                       order_idx_name='DATE'):
+        df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)
+
+        temp = self.prepare_temp(df, group_col_names, order_idx_name)
+        temp = temp.groupby(group_col_names)[col_name].expanding(min_periods=min_periods).max()
+
+        df = self.merge_stat_to_df(
+            stat_df=temp, df=df, group_col_names=group_col_names, col_name=col_name, new_col_name=new_col_name,
+            n_shift=n_shift
+            )
+
+        if original_idx_name is None:
+            return df
+        return df.set_index(original_idx_name)
+
     def expanding_weighted_mean(self, df, group_col_names, col_name, weight_col_name, new_col_name, min_periods=1,
                                 n_shift=1, order_idx_name='DATE'):
         df, original_idx_name = self.prepare_df(df, new_col_name=new_col_name, order_idx_name=order_idx_name)

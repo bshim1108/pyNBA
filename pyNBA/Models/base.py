@@ -1,11 +1,51 @@
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
 import xgboost as xgb
 from catboost import CatBoostRegressor, Pool
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from pyNBA.Models.features import FeatureCreation
 
 
-class Model(object):
+class PredictionModel(object):
+    def __init__(self, train_data, test_data, regressors, regressand, primary_cols):
+        self.feature_creation = FeatureCreation()
+
+        self.train_data = train_data.drop_duplicates(subset=primary_cols)
+        self.test_data = test_data.drop_duplicates(subset=primary_cols)
+
+        self.regressors = regressors
+        self.regressand = regressand
+
+        self.primary_cols = primary_cols
+
+        self.added_features = False
+        self.trained_model = False
+
+    def add_features(self):
+        self.train_data = self.create_features(self.train_data)
+        self.test_data = self.create_features(self.test_data)
+        self.added_features = True
+
+    def train_model(self):
+        if not self.added_features:
+            self.add_features()
+
+        X = self.train_data[self.regressors]
+        y = self.train_data[self.regressand]
+        self.model.fit(X, y, test_size=0.25, early_stopping_rounds=25)
+
+        self.trained_model = True
+
+    def predict(self):
+        if not self.trained_model:
+            self.train_model()
+
+        output_column = '{}_HAT'.format(self.regressand)
+        self.test_data[output_column] = self.model.predict(self.test_data[self.regressors])
+
+        return self.test_data[self.primary_cols + [output_column]]
+
+class RegressionModel(object):
     def __init__(self):
         self.model = None
 
@@ -16,7 +56,7 @@ class Model(object):
         return self.model.predict(X)
 
 
-class LinearRegressionModel(Model):
+class LinearRegressionModel(RegressionModel):
     def __init__(self):
         self.model = LinearRegression()
 
@@ -27,7 +67,7 @@ class LinearRegressionModel(Model):
             self.model.fit(X, y)
 
 
-class XGBoostRegressionModel(Model):
+class XGBoostRegressionModel(RegressionModel):
     def __init__(self, params):
         self.model = xgb.XGBRegressor()
         self.model.set_params(**params)
@@ -50,7 +90,7 @@ class XGBoostRegressionModel(Model):
                 )
 
 
-class CatBoostRegressionModel(Model):
+class CatBoostRegressionModel(RegressionModel):
     def __init__(self, params):
         self.model = CatBoostRegressor()
         self.model.set_params(**params, silent=True)

@@ -838,3 +838,35 @@ LINESTARAPP_NAME_TO_NBA_NAME = {
     'Zach Norvell': 'Zach Norvell Jr.',
     'Álex Abrines': 'Alex Abrines'
 }
+
+ROTOWIRE_NAME_TO_DK_NAME = {
+    'Cam Reynolds': 'Cameron Reynolds',
+    'Charlie Brown': 'Charles Brown Jr.',
+    'Danuel House': 'Danuel House Jr.',
+    'Derrick Jones': 'Derrick Jones Jr.',
+    'Gary Payton': 'Gary Payton II',
+    'Gary Trent': 'Gary Trent Jr.',
+    'Harry Giles': 'Harry Giles III',
+    'Jaren Jackson': 'Jaren Jackson Jr.',
+    'Joseph Young': 'Joe Young',
+    'Kelly Oubre': 'Kelly Oubre Jr.',
+    'Kevin Knox': 'Kevin Knox II',
+    'Kevin Porter': 'Kevin Porter Jr.',
+    'Kenyon Martin': 'KJ Martin',
+    'Kira Lewis': 'Kira Lewis Jr.',
+    'Larry Nance': 'Larry Nance Jr.',
+    'Lonnie Walker': 'Lonnie Walker IV',
+    'Marcus Morris': 'Marcus Morris Sr.',
+    'Marvin Bagley': 'Marvin Bagley III',
+    'Michael Porter': 'Michael Porter Jr.',
+    'Otto Porter': 'Otto Porter Jr.',
+    'Robert Williams III': 'Robert Williams',
+    'Robert Woodard': 'Robert Woodard II',
+    'T.J. Leaf': 'TJ Leaf',
+    'Tim Hardaway': 'Tim Hardaway Jr.',
+    'Troy Brown': 'Troy Brown Jr.',
+    'Vernon Carey': 'Vernon Carey Jr.',
+    'Wendell Carter': 'Wendell Carter Jr.',
+    'Xavier Tillman Sr.': 'Xavier Tillman',
+    'Zach Norvell': 'Zach Norvell Jr.'
+}
